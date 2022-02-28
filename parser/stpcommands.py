@@ -3,6 +3,9 @@ Created on Mar 28, 2014
 
 Provides functions for constructing the input file for STP.
 @author: stefan
+
+Update 11 October 2021 (jesenteh)
+Added additional state words to blockCharacteristic to support WARP/TWINE
 '''
 
 import itertools
@@ -12,12 +15,16 @@ def blockCharacteristic(stpfile, characteristic, wordsize):
     Excludes this characteristic from being found.
     """
     # Only add state words (x, y, s)
+    # Added additional state words for other ciphers (X)
     # TODO: extend for other ciphers
     filtered_words = {var_name: var_value for var_name, var_value in
                       characteristic.characteristic_data.items()
                       if var_name.startswith('x') or
                       var_name.startswith('y') or
                       var_name.startswith('s') or
+                      var_name.startswith('X') or
+                      var_name.startswith('Y') or
+                      var_name.startswith('K') or
                       var_name.startswith('v')}
 
     blockingStatement = "ASSERT(NOT("
@@ -121,7 +128,7 @@ def setupWeightComputation(stpfile, weight, p, wordsize, ignoreMSBs=0):
     stpfile.write("weight: BITVECTOR(16);\n")
     stpfile.write(getWeightString(p, wordsize, ignoreMSBs) + "\n")
     stpfile.write("ASSERT(weight = {0:#018b});\n".format(weight))
-    #stpfile.write("ASSERT(BVLE(weight, {0:#018b}));\n".format(weight))
+
     return
 
 

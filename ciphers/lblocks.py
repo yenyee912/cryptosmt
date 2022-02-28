@@ -1,11 +1,11 @@
 '''
 Created on Nov 3, 2021
+
 @author: jesenteh
 '''
 
 from parser import stpcommands
 from ciphers.cipher import AbstractCipher
-
 
 class LBlockSCipher(AbstractCipher):
     """
@@ -33,7 +33,7 @@ class LBlockSCipher(AbstractCipher):
 
         with open(stp_filename, 'w') as stp_file:
             header = ("% Input File for STP\n% LBlock-s w={}"
-                      "rounds={}\n\n\n".format(wordsize, rounds))
+                      "rounds={}\n\n\n".format(wordsize,rounds))
             stp_file.write(header)
 
             # Setup variables
@@ -58,8 +58,8 @@ class LBlockSCipher(AbstractCipher):
             stpcommands.setupWeightComputation(stp_file, weight, w, wordsize)
 
             for i in range(rounds):
-                self.setupLBlockSRound(stp_file, x[i], s[i], p[i], f[i], r[i], x[i+1],
-                                       w[i], wordsize)
+                self.setupLBlockSRound(stp_file, x[i], s[i], p[i], f[i], r[i], x[i+1], 
+                                     w[i], wordsize)
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x, wordsize)
@@ -86,8 +86,7 @@ class LBlockSCipher(AbstractCipher):
         command = ""
 
         # Substitution Layer
-        lblock_sbox = [0xE, 9, 0xF, 0, 0xD, 4,
-                       0xA, 0xB, 1, 2, 8, 3, 7, 6, 0xC, 5]
+        lblock_sbox = [0xE, 9, 0xF, 0, 0xD, 4, 0xA, 0xB, 1, 2, 8, 3, 7, 6, 0xC, 5]
         for i in range(8):
             variables = ["{0}[{1}:{1}]".format(x_in, 4*i + 3),
                          "{0}[{1}:{1}]".format(x_in, 4*i + 2),
@@ -142,43 +141,31 @@ class LBlockSCipher(AbstractCipher):
         command += "ASSERT(0x00000000 = {0}[63:32]);\n".format(f)
         command += "ASSERT(0x00000000 = {0}[63:32]);\n".format(r)
 
-        #Complete Feistel operation
-        # 0 -> 8
-        command += "ASSERT({0}[3:0]   = {1}[35:32]);\n".format(p, x_out)
-        # 1 -> 9
-        command += "ASSERT({0}[7:4]   = {1}[39:36]);\n".format(p, x_out)
-        # 2 -> 10
-        command += "ASSERT({0}[11:8]  = {1}[43:40]);\n".format(p, x_out)
-        # 3 -> 11
-        command += "ASSERT({0}[15:12] = {1}[47:44]);\n".format(p, x_out)
-        # 4 -> 12
-        command += "ASSERT({0}[19:16] = {1}[51:48]);\n".format(p, x_out)
-        # 5 -> 13
-        command += "ASSERT({0}[23:20] = {1}[55:52]);\n".format(p, x_out)
-        # 6 -> 14
-        command += "ASSERT({0}[27:24] = {1}[59:56]);\n".format(p, x_out)
-        # 7 -> 15
-        command += "ASSERT({0}[31:28] = {1}[63:60]);\n".format(p, x_out)
+        #Permutation Layer
+        # pi = [5, 0, 1, 4, 7, 0xC, 3, 8, 0xD, 6, 9, 2, 0xF, 0xA, 0xB, 0xE]
+        # 1 word = 4 bit
+        command += "ASSERT({0}[3:0]   = {1}[35:32]);\n".format(p, x_out)	#0 -> 8
+        command += "ASSERT({0}[7:4]   = {1}[39:36]);\n".format(p, x_out)	#1 -> 9
+        command += "ASSERT({0}[11:8]  = {1}[43:40]);\n".format(p, x_out)	#2 -> 10
+        command += "ASSERT({0}[15:12] = {1}[47:44]);\n".format(p, x_out) 	#3 -> 11
+        command += "ASSERT({0}[19:16] = {1}[51:48]);\n".format(p, x_out)	#4 -> 12
+        command += "ASSERT({0}[23:20] = {1}[55:52]);\n".format(p, x_out)	#5 -> 13
+        command += "ASSERT({0}[27:24] = {1}[59:56]);\n".format(p, x_out)	#6 -> 14
+        command += "ASSERT({0}[31:28] = {1}[63:60]);\n".format(p, x_out)	#7 -> 15
 
-        # 8 -> 0
-        command += "ASSERT({0}[35:32] = {1}[3:0]);\n".format(p, x_out)
-        # 9 -> 1
-        command += "ASSERT({0}[39:36] = {1}[7:4]);\n".format(p, x_out)
-        # 10 -> 2
-        command += "ASSERT({0}[43:40] = {1}[11:8]);\n".format(p, x_out)
-        # 11 -> 3
-        command += "ASSERT({0}[47:44] = {1}[15:12]);\n".format(p, x_out)
-        # 12 -> 4
-        command += "ASSERT({0}[51:48] = {1}[19:16]);\n".format(p, x_out)
-        # 13 -> 5
-        command += "ASSERT({0}[55:52] = {1}[23:20]);\n".format(p, x_out)
-        # 14 -> 6
-        command += "ASSERT({0}[59:56] = {1}[27:24]);\n".format(p, x_out)
-        # 15 -> 7
-        command += "ASSERT({0}[63:60] = {1}[31:28]);\n".format(p, x_out)
+        command += "ASSERT({0}[35:32] = {1}[3:0]);\n".format(p, x_out)	    #8 -> 0
+        command += "ASSERT({0}[39:36] = {1}[7:4]);\n".format(p, x_out)	    #9 -> 1
+        command += "ASSERT({0}[43:40] = {1}[11:8]);\n".format(p, x_out)	    #10 -> 2
+        command += "ASSERT({0}[47:44] = {1}[15:12]);\n".format(p, x_out)	#11 -> 3
+        command += "ASSERT({0}[51:48] = {1}[19:16]);\n".format(p, x_out)	#12 -> 4
+        command += "ASSERT({0}[55:52] = {1}[23:20]);\n".format(p, x_out)	#13 -> 5
+        command += "ASSERT({0}[59:56] = {1}[27:24]);\n".format(p, x_out)	#14 -> 6
+        command += "ASSERT({0}[63:60] = {1}[31:28]);\n".format(p, x_out)	#15 -> 7
+
 
         stp_file.write(command)
         return
+
 
     def getSbox(self):
         #Returns sBox - Required for boomerang search
@@ -188,12 +175,12 @@ class LBlockSCipher(AbstractCipher):
     def getSboxSize(self):
         #Returns sBox size - Required for boomerang search
         return 4
-
+    
     def getPerm(self):
         #Returns permutation pattern - Required for boomerang search
         perm = [8, 9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6, 7]
         return perm
-
+    
     def getDesign(self):
         #Returns design paradigm ("gfn", "spn", "arx") - Required for boomerang search
         return "feistel"

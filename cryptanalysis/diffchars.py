@@ -2,6 +2,9 @@
 Created on Apr 25, 2014
 
 @author: stefan
+
+Update: 11 October, 2021 (jesenteh)
+Added functions to return input and output differences
 '''
 
 import itertools
@@ -158,3 +161,19 @@ class DifferentialCharacteristic(object):
 
 
         return result
+
+    def getOutputDiff(self):
+        """
+        Get the output difference of a trail
+        """
+        data = self.getData()
+        
+        return data[self.num_rounds][0]
+
+    def getInputDiff(self):
+        """
+        Get the Input difference of a trail
+        """
+        data = self.getData()
+        
+        return data[0][0]

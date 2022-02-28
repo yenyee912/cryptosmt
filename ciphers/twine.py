@@ -2,6 +2,8 @@
 Created on Mar 2, 2017
 
 @author: ralph
+
+Edited with additional boomerang search functions - jesenteh
 '''
 
 from parser import stpcommands
@@ -142,3 +144,22 @@ class TwineCipher(AbstractCipher):
 
         stp_file.write(command)
         return
+
+
+    def getSbox(self):
+        #Returns sBox - Required for boomerang search
+        sBox = [0xC, 0x0, 0xF, 0xA, 0x2, 0xB, 0x9, 0x5, 0x8, 0x3, 0xD, 0x7, 0x1, 0xE, 0x6, 4]
+        return sBox
+
+    def getSboxSize(self):
+        #Returns sBox size - Required for boomerang search
+        return 4
+    
+    def getPerm(self):
+        #Returns permutation pattern - Required for boomerang search
+        perm = [5, 0, 1, 4, 7, 12, 3, 8, 13, 6, 9, 2, 15, 10, 11, 14]
+        return perm
+    
+    def getDesign(self):
+        #Returns design paradigm ("gfn", "spn", "arx") - Required for boomerang search
+        return "gfn"
