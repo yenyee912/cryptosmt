@@ -1,6 +1,5 @@
 '''
 Created on Mar 28, 2014
-
 @author: stefan
 '''
 
@@ -22,27 +21,27 @@ def startsearch(tool_parameters):
     Starts the search tool for the given parameters
     """
 
-    cipher_suite = {"simon" : simon.SimonCipher(),
-                    "speck" : speck.SpeckCipher(),
-                    "simonlinear" : simonlinear.SimonLinearCipher(),
-                    "keccak" : keccak.KeccakCipher(),
-                    "keccakdiff" : keccakdiff.KeccakDiffCipher(),
-                    "ketje" : ketje.KetjeCipher(),
-                    "siphash" : siphash.SipHashCipher(),
-                    "simonrk" : simonrk.SimonRkCipher(),
-                    "simonkeyrc" : simonkeyrc.SimonKeyRcCipher(),
-                    "chaskeyhalf" : chaskeymachalf.ChasKeyMacHalf(),
-                    "ascon" : ascon.AsconCipher(),
-                    "salsa" : salsa.SalsaCipher(),
-                    "chacha" : chacha.ChaChaCipher(),
-                    "skinny" : skinny.SkinnyCipher(),
-                    "skinnyrk" : skinnyrk.SkinnyRKCipher(),
-                    "gimli" : gimli.GimliCipher(),
-                    "present" : present.PresentCipher(),
-                    "craft" : craft.CraftCipher(),
-                    "craftlinear" : craftlinear.CraftCipherLinear(),                   
-                    "trifle" : trifle.TrifleCipher(),
-                    "triflerk" : triflerk.TrifleRK()}
+    cipher_suite = {"simon": simon.SimonCipher(),
+                    "speck": speck.SpeckCipher(),
+                    "simonlinear": simonlinear.SimonLinearCipher(),
+                    "keccak": keccak.KeccakCipher(),
+                    "keccakdiff": keccakdiff.KeccakDiffCipher(),
+                    "ketje": ketje.KetjeCipher(),
+                    "siphash": siphash.SipHashCipher(),
+                    "simonrk": simonrk.SimonRkCipher(),
+                    "simonkeyrc": simonkeyrc.SimonKeyRcCipher(),
+                    "chaskeyhalf": chaskeymachalf.ChasKeyMacHalf(),
+                    "ascon": ascon.AsconCipher(),
+                    "salsa": salsa.SalsaCipher(),
+                    "chacha": chacha.ChaChaCipher(),
+                    "skinny": skinny.SkinnyCipher(),
+                    "skinnyrk": skinnyrk.SkinnyRKCipher(),
+                    "gimli": gimli.GimliCipher(),
+                    "present": present.PresentCipher(),
+                    "craft": craft.CraftCipher(),
+                    "craftlinear": craftlinear.CraftCipherLinear(),
+                    "trifle": trifle.TrifleCipher(),
+                    "triflerk": triflerk.TrifleRK()}
 
     cipher = None
 
@@ -65,6 +64,7 @@ def startsearch(tool_parameters):
         search.computeProbabilityOfDifferentials(cipher, tool_parameters)
 
     return
+
 
 def checkenviroment():
     """
@@ -94,21 +94,21 @@ def loadparameters(args):
     Get parameters from the argument list and inputfile.
     """
     # Load default values
-    params = {"cipher" : "simon",
-              "rounds" : 5,
-              "mode" : 0,
-              "wordsize" : 16,
-              "blocksize" : 64,
-              "sweight" : 0,
-              "endweight" : 1000,
-              "iterative" : False,
-              "boolector" : False,
-              "dot" : None,
-              "latex" : None,
-              "nummessages" : 1,
-              "timelimit" : -1,
-              "fixedVariables" : {},
-              "blockedCharacteristics" : []}
+    params = {"cipher": "simon",
+              "rounds": 5,
+              "mode": 0,
+              "wordsize": 16,
+              "blocksize": 64,
+              "sweight": 0,
+              "endweight": 1000,
+              "iterative": False,
+              "boolector": False,
+              "dot": None,
+              "latex": None,
+              "nummessages": 1,
+              "timelimit": -1,
+              "fixedVariables": {},
+              "blockedCharacteristics": []}
 
     # Check if there is an input file specified
     if args.inputfile:
@@ -133,7 +133,7 @@ def loadparameters(args):
         params["wordsize"] = args.wordsize[0]
 
     if args.blocksize:
-        params["blocksize"] = args.blocksize[0]        
+        params["blocksize"] = args.blocksize[0]
 
     if args.sweight:
         params["sweight"] = args.sweight[0]
@@ -179,18 +179,17 @@ def main():
     parser.add_argument('--sweight', nargs=1, type=int,
                         help="Starting weight for the trail search.")
     parser.add_argument('--endweight', nargs=1, type=int,
-                        help="Stop search after reaching endweight.")    
+                        help="Stop search after reaching endweight.")
     parser.add_argument('--rounds', nargs=1, type=int,
                         help="The number of rounds for the cipher")
     parser.add_argument('--wordsize', nargs=1, type=int,
                         help="Wordsize used for the cipher.")
     parser.add_argument('--blocksize', nargs=1, type=int,
-                        help="Blocksize used for the cipher.")    
+                        help="Blocksize used for the cipher.")
     parser.add_argument('--nummessages', nargs=1, type=int,
                         help="Number of message blocks.")
-    parser.add_argument('--mode', nargs=1, type=int, 
-                        choices=[0, 1, 2, 3, 4], help=
-                        "0 = search characteristic for fixed round\n"
+    parser.add_argument('--mode', nargs=1, type=int,
+                        choices=[0, 1, 2, 3, 4], help="0 = search characteristic for fixed round\n"
                         "1 = search characteristic for all rounds starting at"
                         "the round specified\n"
                         "2 = search all characteristic for a specific weight\n"
@@ -204,8 +203,10 @@ def main():
                         help="Use boolector to find solutions")
     parser.add_argument('--inputfile', nargs=1, help="Use an yaml input file to"
                                                      "read the parameters.")
-    parser.add_argument('--dot', nargs=1, help="Print the trail in .dot format.")
-    parser.add_argument('--latex', nargs=1, help="Print the trail in .tex format.")
+    parser.add_argument(
+        '--dot', nargs=1, help="Print the trail in .dot format.")
+    parser.add_argument('--latex', nargs=1,
+                        help="Print the trail in .tex format.")
 
     # Parse command line arguments and construct parameter list.
     args = parser.parse_args()
