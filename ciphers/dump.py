@@ -1,0 +1,20 @@
+
+# the permutation p, is the xor combination of s (x_in after substitution)
+# can we use (f, s)?
+# command += "ASSERT({0}[35:32] = BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[51:48], BVXOR({1}[55:52], {1}[59:56]))))));\n".format(f, s)
+# command += "ASSERT({0}[39:36] = BVXOR({1}[35:32], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[55:52], BVXOR({1}[59:56], {1}[63:60]))))));\n".format(f, s)
+# command += "ASSERT({0}[43:40] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[47:44], BVXOR({1}[51:48], BVXOR({1}[59:56], {1}[63:60]))))));\n".format(f, s)
+# command += "ASSERT({0}[47:44] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[51:48], BVXOR({1}[55:52], {1}[63:60]))))));\n".format(f, s)
+# command += "ASSERT({0}[51:48] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[47:44], BVXOR({1}[51:48], {1}[55:52])))));\n".format(f, s)
+# command += "ASSERT({0}[55:52] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[55:52], {1}[59:56])))));\n".format(f, s)
+# command += "ASSERT({0}[59:56] = BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[59:56], {1}[63:60])))));\n".format(f, s)
+# command += "ASSERT({0}[63:60] = BVXOR({1}[35:32], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[51:48], {1}[63:60])))));\n".format(f, s)
+
+# command += "ASSERT({0}[35:32] = {1}[39:36]);\n".format(f, p)
+# command += "ASSERT({0}[39:36] = {1}[63:60]);\n".format(f, p)
+# command += "ASSERT({0}[43:40] = {1}[35:32]);\n".format(f, p)
+# command += "ASSERT({0}[47:44] = {1}[43:40]);\n".format(f, p)
+# command += "ASSERT({0}[51:48] = {1}[55:52]);\n".format(f, p)
+# command += "ASSERT({0}[55:52] = {1}[59:56]);\n".format(f, p)
+# command += "ASSERT({0}[59:56] = {1}[47:44]);\n".format(f, p)
+# command += "ASSERT({0}[63:60] = {1}[51:48]);\n".format(f, p)

@@ -118,31 +118,49 @@ class MibsCipher(AbstractCipher):
         y2′ = y1 + y3 + y4 + y6 + y7 + y8
         y3′ = y1 + y2 + y4 + y5 + y7 + y8 
         y4′ = y1 + y2 + y3 + y5 + y6 + y8 
-        y5′ =y1 +y2 +y4 +y5 +y6 
-        y6′ =y1 +y2 +y3 +y6 +y7 
-        y7′ =y2 +y3 +y4 +y7 +y8 
-        y8′ =y1 +y3 +y4 +y5 +y8 
+        y5′ = y1 +y2 +y4 +y5 +y6 
+        y6′ = y1 +y2 +y3 +y6 +y7 
+        y7′ = y2 +y3 +y4 +y7 +y8 
+        y8′ = y1 +y3 +y4 +y5 +y8 
         
+        new- 2 8 1 3 6 7 4 5 
+        old- 1 2 3 4 5 6 7 8
+
+        1 go to 2, 2 go to 8, 3 go to 1
+        4 go to 3, 5 go to 6, 6 go to 7
+        7 go to 4, 8 go to 5
+          
         
         L-63:60 59:56 55:52 51:48 47:44 43:40 39:36 35:32 
         R-31:28 27:24 23:20 19:16 15:12 11:8  7:4   3:0
-          8     7     6     5     4     3     2     1
-        """
-        
-        #nibble-wise permutation
-        """
-        1 2 3 4 5 6 7 8
-        2 8 1 3 6 7 4 5
+          1     2     3     4     5     6     7     8
         """
 
-        command += "ASSERT({0}[35:32] = BVXOR({1}[35:32], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[55:52], BVXOR({1}[59:56], {1}[63:60]))))));\n".format(f, s)
-        command += "ASSERT({0}[39:36] = BVXOR({1}[35:32], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[51:48], {1}[63:60])))));\n".format(f, s)
-        command += "ASSERT({0}[43:40] = BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[51:48], BVXOR({1}[55:52], {1}[59:56]))))));\n".format(f, s)
-        command += "ASSERT({0}[47:44] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[47:44], BVXOR({1}[51:48], BVXOR({1}[59:56], {1}[63:60]))))));\n".format(f, s)
-        command += "ASSERT({0}[51:48] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[55:52], {1}[59:56])))));\n".format(f, s)
-        command += "ASSERT({0}[55:52] = BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[47:44], BVXOR({1}[59:56], {1}[63:60])))));\n".format(f, s)
-        command += "ASSERT({0}[59:56] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[43:40], BVXOR({1}[51:48], BVXOR({1}[55:52], {1}[63:60]))))));\n".format(f, s)
-        command += "ASSERT({0}[63:60] = BVXOR({1}[35:32], BVXOR({1}[39:36], BVXOR({1}[47:44], BVXOR({1}[51:48], {1}[55:52])))));\n".format(f, s)
+
+
+        #y3- dont care the {0} first
+        command += "ASSERT({0}[63:60] = BVXOR({1}[63:60], BVXOR({1}[59:56], BVXOR({1}[51:48], BVXOR({1}[47:44], BVXOR({1}[39:36], {1}[35:32]))))));\n".format(f, s)
+        
+        # y1
+        command += "ASSERT({0}[59:56] = BVXOR({1}[59:56], BVXOR({1}[55:52], BVXOR({1}[51:48], BVXOR({1}[47:44], BVXOR({1}[43:40], {1}[39:36]))))));\n".format(f, s)
+        
+        # y4
+        command += "ASSERT({0}[55:52] = BVXOR({1}[63:60], BVXOR({1}[59:56], BVXOR({1}[55:52], BVXOR({1}[47:44], BVXOR({1}[43:40], {1}[35:32]))))));\n".format(f, s)
+        
+        # y7
+        command += "ASSERT({0}[51:48] = BVXOR({1}[59:56], BVXOR({1}[55:52], BVXOR({1}[51:48], BVXOR({1}[39:36], {1}[35:32]))))); \n".format(f, s)
+        
+        # y8
+        command += "ASSERT({0}[47:44] = BVXOR({1}[63:60], BVXOR({1}[55:52], BVXOR({1}[51:48], BVXOR({1}[47:44], {1}[35:32])))));\n".format(f, s)
+        
+        # y5
+        command += "ASSERT({0}[43:40] = BVXOR({1}[63:60], BVXOR({1}[59:56], BVXOR({1}[51:48], BVXOR({1}[47:44], {1}[43:40])))));\n".format(f, s)
+        
+        # y6
+        command += "ASSERT({0}[39:36] = BVXOR({1}[63:60], BVXOR({1}[59:56], BVXOR({1}[55:52], BVXOR({1}[43:40], {1}[39:36])))));\n".format(f, s)
+        
+        # y2
+        command += "ASSERT({0}[35:32] = BVXOR({1}[63:60], BVXOR({1}[55:52], BVXOR({1}[51:48], BVXOR({1}[43:40], BVXOR({1}[39:36], {1}[35:32]))))));\n".format(f, s)
 
         #left= addition- left xor right
         # reverse params(f, x_in) of slim, slim is rhs[0:3] go to fBox
