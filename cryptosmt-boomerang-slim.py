@@ -10,7 +10,7 @@ To support WARP, the modified stpcommands must be included because the state wor
 '''
 
 from cryptanalysis import search, boomerang
-from ciphers import (simon, speck, simonlinear, keccak, keccakdiff,
+from ciphers import (sparx, sparxround, simon, speck, simonlinear, keccak, keccakdiff,
                      siphash, simonrk, chaskeymachalf, simonkeyrc,
                      ketje, ascon, salsa, chacha, skinny, skinnyrk, gimli,
                      present, craft, craftlinear, trifle, trifle, triflerk, twine, warp, warprk, lblocks, lblock, slim)
@@ -53,7 +53,11 @@ def startsearch(tool_parameters):
                     "warprk" : warprk.WarpRKCipher(),
                     "lblocks" : lblocks.LBlockSCipher(),
                     # "lblock" : lblock.LBlockCipher(),
-                    "slim": slim.Slim()}
+                    "slim": slim.Slim(),
+                    "sparx": sparx.SPARXCipher(),
+                    "sparxround": sparxround.SPARXRoundCipher()
+                    
+                  }
 
     cipher = None
 
