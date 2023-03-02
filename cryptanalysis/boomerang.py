@@ -366,7 +366,6 @@ def createBCT(parameters, cipher):
                         if diff == 0:
                             parameters["bct"][Di][Do]+=1
     #print BCT
-    print("----")
     for x in range(16):
         for y in range(16):
             print(parameters["bct"][x][y], end='')
