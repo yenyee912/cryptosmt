@@ -25,7 +25,7 @@ class SPARXCipher(AbstractCipher):
         """
         return ['X0', 'X1', 'Y0', 'Y1',
                 'X0A0', 'X1A0', 'X0A1', 'X1A1', 'X0A2', 'X1A2',
-                'Y0A0', 'Y1A0', 'Y0A1', 'Y1A1', 'Y0A2', 'Y1A2', 'w']
+                'Y0A0', 'Y1A0', 'Y0A1', 'Y1A1', 'Y0A2', 'Y1A2', 'X0L', 'X1L', 'w']
 
     def createSTP(self, stp_filename, parameters):
         """

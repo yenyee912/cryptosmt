@@ -1,0 +1,16 @@
+---
+cipher: mibs
+wordsize: 64
+rounds: 32
+mode: 1
+# endweight: 1000
+# sweight: 12
+# fixedVariables:
+# - X0: "0xEEE0E0EE50500550"
+# - X1: "0xEEE0E0EE00000050"
+
+# - X0: "0x1000000010001110"
+
+# - S0: "0x1000000000000000"
+# - X4: "0x0010010100000100"
+...

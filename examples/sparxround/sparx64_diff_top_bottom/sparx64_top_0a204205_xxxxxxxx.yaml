@@ -8,7 +8,7 @@ mode: 1
 #skipround: 1
 fixedVariables:
 - X00: "0x0A20"
-- X10: "0x4205"
+- X10: "0x4205" #in paper, 0a204205 only happen as Y part
 - Y01: "0x1408"
 - Y11: "0x0000"
 - X02: "0x2800"

@@ -41,15 +41,24 @@ class DifferentialCharacteristic(object):
             for word in self.print_format:
                 try:
                     # Add word to table
-                    if word == 'w':
+                    if word == 'w' or word == 'wl' or word == 'wr':
                         weight = self.characteristic_data[word+str(rnd)]
                         # Print hw(weight) or weight depending on the cipher
                         if self.cipher.name == "keccakdiff" or \
                            self.cipher.name == "ketje" or \
                            self.cipher.name == "ascon":
                             tmp_row.append("-" + str(int(weight, 16)))
+                        #TODO: Temporary hack for cham64
+                        elif self.cipher.name == "cham" or \
+                                self.cipher.name == "speck" or \
+                                self.cipher.name == "sparxround1r" or \
+                                self.cipher.name == "sparxround" :
+
+                            tmp_row.append(
+                                "-" + str(bin(int(weight, 16) & 0b0111111111111111).count('1')))
                         else:
-                            tmp_row.append("-" + str(bin(int(weight, 16)).count('1')))
+                            tmp_row.append(
+                                "-" + str(bin(int(weight, 16)).count('1')))
                     else:
                         tmp_row.append(self.characteristic_data[word+str(rnd)])
                 except KeyError:
@@ -57,7 +66,7 @@ class DifferentialCharacteristic(object):
             if tmp_row:
                 data.append(tmp_row)
         return data
-
+    
     def printText(self):
         """
         Prints a table from the data structure.

@@ -23,7 +23,7 @@ class SPARXRoundCipher(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['X0', 'X1', 'Y0', 'Y1','X0L', 'X1L','wl','wr']
+        return ['X0', 'X1', 'Y0', 'Y1', 'X0A', 'X1A', 'Y0A', 'Y1A', 'X0L', 'X1L', 'wl', 'wr']
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -44,12 +44,18 @@ class SPARXRoundCipher(AbstractCipher):
             # x0, x1 = left, y0, y1 = right
             x0 = ["X0{}".format(i) for i in range(rounds + 1)]
             x1 = ["X1{}".format(i) for i in range(rounds + 1)]
+            # x0_after_A = ["X0A{}".format(i) for i in range(rounds)]
+            # x1_after_A = ["X1A{}".format(i) for i in range(rounds)]
+            # x0_after_L = ["X0L{}".format(i) for i in range(rounds)]
+            # x1_after_L = ["X1L{}".format(i) for i in range(rounds)]
             x0_after_A = ["X0A{}".format(i) for i in range(rounds + 1)]
             x1_after_A = ["X1A{}".format(i) for i in range(rounds + 1)]
             x0_after_L = ["X0L{}".format(i) for i in range(rounds + 1)]
             x1_after_L = ["X1L{}".format(i) for i in range(rounds + 1)]
             y0 = ["Y0{}".format(i) for i in range(rounds + 1)]
             y1 = ["Y1{}".format(i) for i in range(rounds + 1)]
+            # y0_after_A = ["Y0A{}".format(i) for i in range(rounds)]
+            # y1_after_A = ["Y1A{}".format(i) for i in range(rounds)]
             y0_after_A = ["Y0A{}".format(i) for i in range(rounds + 1)]
             y1_after_A = ["Y1A{}".format(i) for i in range(rounds + 1)]
 
@@ -75,35 +81,42 @@ class SPARXRoundCipher(AbstractCipher):
 
             for i in range(rounds):
                 if parameters["skipround"] == (i+1):
+                    # print("skip round here:::", i)
                     continue
 
                 if ((i+1) % self.rounds_per_step) == 0:
                     #do round function left (SPECKEY)
-                    self.setupSPECKEYRound(stp_file, x0[i], x1[i],
+                    self.A(stp_file, x0[i], x1[i],
                                            x0_after_A[i], x1_after_A[i],
                                            wleft[i], wordsize)
-
+                    # print(
+                    #     "left A3, x0_after_A[i], x1_after_A[i]", x0_after_A[i], " ", x1_after_A[i])
                     #do round function right (SPECKEY)
-                    self.setupSPECKEYRound(stp_file, y0[i], y1[i],
+                    self.A(stp_file, y0[i], y1[i],
                                            y0_after_A[i], y1_after_A[i],
                                            wright[i], wordsize)
-
-                    #every step do L-box and feistel
+                    # print(
+                    #     "right A3, y0_after_A[i], y1_after_A[i]", y0_after_A[i], " ",y1_after_A[i])
+                    #every step do L-box and feistel (if this is turn off, round 3 become all 0)
                     self.setupSPARXRound(stp_file, x0_after_A[i], x1_after_A[i],
                                          y0_after_A[i], y1_after_A[i],
                                          x0_after_L[i], x1_after_L[i],
                                          x0[i+1], x1[i+1], y0[i+1], y1[i+1])
+                    # print("do L ", x0[i+1], x1[i+1], y0[i+1], y1[i+1])
                 else:
                     #do round function left (SPECKEY)
-                    self.setupSPECKEYRound(stp_file, x0[i], x1[i], x0[i+1], x1[i+1],
+                    self.A(stp_file, x0[i], x1[i], x0[i+1], x1[i+1],
                                            wleft[i], wordsize)
+                    # print("left A", i, x0[i], x1[i], x0[i+1], x1[i+1])
 
                     if (parameters["skipround"]+1) == (i+1):
+                        # print("skip RIGHT here:::", i)
                         continue
                     else :
                         #do round function right (SPECKEY)
-                        self.setupSPECKEYRound(stp_file, y0[i], y1[i], y0[i+1], y1[i+1],
+                        self.A(stp_file, y0[i], y1[i], y0[i+1], y1[i+1],
                                                wright[i], wordsize)
+                        # print("right A", i, y0[i], y1[i], y0[i+1], y1[i+1])
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x0+x1+y0+y1, wordsize)
@@ -151,7 +164,7 @@ class SPARXRoundCipher(AbstractCipher):
         return
 
 
-    def setupSPECKEYRound(self, stp_file, x_in, y_in, x_out, y_out, w, wordsize):
+    def A(self, stp_file, x_in, y_in, x_out, y_out, w, wordsize):
         """
         Model for the ARX box (round) function of SPARX which is the
         same as SPECKEY.
