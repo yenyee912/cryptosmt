@@ -90,7 +90,7 @@ class CHAMCipher(AbstractCipher):
             stpcommands.setupQuery(stp_file)
 
         return
-        
+
     def setupCHAMRound(self, stp_file, x0_in, x1_in, x2_in, x3_in,
                        x0_out, x1_out, x2_out, x3_out, x0x1,
                        rot_x0, rot_x1, w, wordsize):
@@ -105,9 +105,9 @@ class CHAMCipher(AbstractCipher):
         # X_{i+1}[3] = (X_{i}[0] + (X_{i}[1] << 8)) << 1
 
         command += "ASSERT("
-        command += stpcommands.getStringAdd( 
+        command += stpcommands.getStringAdd(
                                             rotl(x1_in,
-                                                 rot_x1, #this is a constant define above
+                                                 rot_x1,
                                                  wordsize),
                                             x0_in,
                                             x0x1,
@@ -125,39 +125,10 @@ class CHAMCipher(AbstractCipher):
 
         #For weight computation
         command += "ASSERT({0} = ~".format(w)
-        
         command += stpcommands.getStringEq(x0_in,
                                            rotl(x1_in, rot_x1, wordsize),
                                            x0x1)
         command += ");\n"
 
-        variables = [
-            "{0}[{1}:{1}]".format(x0_in, 3), #look at getStringAdd
-            "{0}[{1}:{1}]".format(x0_in, 2),
-            "{0}[{1}:{1}]".format(x0_in,1),
-            "{0}[{1}:{1}]".format(x0_in, 0),
-                       
-            "{0}[{1}:{1}]".format(rot_x0, 3),
-            "{0}[{1}:{1}]".format(rot_x0, 2),
-            "{0}[{1}:{1}]".format(rot_x0, 1),
-            "{0}[{1}:{1}]".format(rot_x0, 0),
-                     
-            "{0}[{1}:{1}]".format(x0x1, 3),
-            "{0}[{1}:{1}]".format(x0x1, 2),
-            "{0}[{1}:{1}]".format(x0x1, 1),
-            "{0}[{1}:{1}]".format(x0x1, 0),
-
-    #if ignore weight, just valid switch
-            #the weight is not 4bits
-            "{0}[{1}:{1}]".format(w, 3),
-            "{0}[{1}:{1}]".format(w, 2),
-            "{0}[{1}:{1}]".format(w, 1),
-            "{0}[{1}:{1}]".format(w, 0)]        
-        
-        command += stpcommands.addPartialDDT(variables)
-
         stp_file.write(command)
-        
         return
-    
-        # def setupCHARMSwitch():
