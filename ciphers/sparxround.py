@@ -1,14 +1,15 @@
-'''
+"""
 Created on Mar 29, 2017
 
 @author: ralph
-'''
+"""
 
 from parser import stpcommands
 from ciphers.cipher import AbstractCipher
 
 from parser.stpcommands import getStringRightRotate as rotr
 from parser.stpcommands import getStringLeftRotate as rotl
+
 
 class SPARXRoundCipher(AbstractCipher):
     """
@@ -23,7 +24,20 @@ class SPARXRoundCipher(AbstractCipher):
         """
         Returns the print format.
         """
-        return ['X0', 'X1', 'Y0', 'Y1', 'X0A', 'X1A', 'Y0A', 'Y1A', 'X0L', 'X1L', 'wl', 'wr']
+        return [
+            "X0",
+            "X1",
+            "Y0",
+            "Y1",
+            "X0A",
+            "X1A",
+            "Y0A",
+            "Y1A",
+            "X0L",
+            "X1L",
+            "wl",
+            "wr",
+        ]
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -35,9 +49,10 @@ class SPARXRoundCipher(AbstractCipher):
         rounds = parameters["rounds"]
         weight = parameters["sweight"]
 
-        with open(stp_filename, 'w') as stp_file:
-            header = ("% Input File for STP\n% SPARX w={}"
-                      "rounds={}\n\n\n".format(wordsize,rounds))
+        with open(stp_filename, "w") as stp_file:
+            header = "% Input File for STP\n% SPARX w={}" "rounds={}\n\n\n".format(
+                wordsize, rounds
+            )
             stp_file.write(header)
 
             # Setup variables
@@ -77,49 +92,80 @@ class SPARXRoundCipher(AbstractCipher):
             stpcommands.setupVariables(stp_file, wright, wordsize)
 
             # Ignore MSB
-            stpcommands.setupWeightComputation(stp_file, weight, wleft + wright, wordsize, 1)
+            stpcommands.setupWeightComputation(
+                stp_file, weight, wleft + wright, wordsize, 1
+            )
 
             for i in range(rounds):
-                if parameters["skipround"] == (i+1):
+                if parameters["skipround"] == (i + 1):
                     # print("skip round here:::", i)
                     continue
 
-                if ((i+1) % self.rounds_per_step) == 0:
-                    #do round function left (SPECKEY)
-                    self.A(stp_file, x0[i], x1[i],
-                                           x0_after_A[i], x1_after_A[i],
-                                           wleft[i], wordsize)
+                if ((i + 1) % self.rounds_per_step) == 0:
+                    # do round function left (SPECKEY)
+                    self.A(
+                        stp_file,
+                        x0[i],
+                        x1[i],
+                        x0_after_A[i],
+                        x1_after_A[i],
+                        wleft[i],
+                        wordsize,
+                    )
                     # print(
                     #     "left A3, x0_after_A[i], x1_after_A[i]", x0_after_A[i], " ", x1_after_A[i])
-                    #do round function right (SPECKEY)
-                    self.A(stp_file, y0[i], y1[i],
-                                           y0_after_A[i], y1_after_A[i],
-                                           wright[i], wordsize)
+                    # do round function right (SPECKEY)
+                    self.A(
+                        stp_file,
+                        y0[i],
+                        y1[i],
+                        y0_after_A[i],
+                        y1_after_A[i],
+                        wright[i],
+                        wordsize,
+                    )
                     # print(
                     #     "right A3, y0_after_A[i], y1_after_A[i]", y0_after_A[i], " ",y1_after_A[i])
-                    #every step do L-box and feistel (if this is turn off, round 3 become all 0)
-                    self.setupSPARXRound(stp_file, x0_after_A[i], x1_after_A[i],
-                                         y0_after_A[i], y1_after_A[i],
-                                         x0_after_L[i], x1_after_L[i],
-                                         x0[i+1], x1[i+1], y0[i+1], y1[i+1])
+                    # every step do L-box and feistel (if this is turn off, round 3 become all 0)
+                    self.setupSPARXRound(
+                        stp_file,
+                        x0_after_A[i],
+                        x1_after_A[i],
+                        y0_after_A[i],
+                        y1_after_A[i],
+                        x0_after_L[i],
+                        x1_after_L[i],
+                        x0[i + 1],
+                        x1[i + 1],
+                        y0[i + 1],
+                        y1[i + 1],
+                    )
                     # print("do L ", x0[i+1], x1[i+1], y0[i+1], y1[i+1])
                 else:
-                    #do round function left (SPECKEY)
-                    self.A(stp_file, x0[i], x1[i], x0[i+1], x1[i+1],
-                                           wleft[i], wordsize)
+                    # do round function left (SPECKEY)
+                    self.A(
+                        stp_file, x0[i], x1[i], x0[i + 1], x1[i + 1], wleft[i], wordsize
+                    )
                     # print("left A", i, x0[i], x1[i], x0[i+1], x1[i+1])
 
-                    if (parameters["skipround"]+1) == (i+1):
+                    if (parameters["skipround"] + 1) == (i + 1):
                         # print("skip RIGHT here:::", i)
                         continue
-                    else :
-                        #do round function right (SPECKEY)
-                        self.A(stp_file, y0[i], y1[i], y0[i+1], y1[i+1],
-                                               wright[i], wordsize)
+                    else:
+                        # do round function right (SPECKEY)
+                        self.A(
+                            stp_file,
+                            y0[i],
+                            y1[i],
+                            y0[i + 1],
+                            y1[i + 1],
+                            wright[i],
+                            wordsize,
+                        )
                         # print("right A", i, y0[i], y1[i], y0[i+1], y1[i+1])
 
             # No all zero characteristic
-            stpcommands.assertNonZero(stp_file, x0+x1+y0+y1, wordsize)
+            stpcommands.assertNonZero(stp_file, x0 + x1 + y0 + y1, wordsize)
 
             # Iterative characteristics only
             # Input difference = Output difference
@@ -139,16 +185,27 @@ class SPARXRoundCipher(AbstractCipher):
 
         return
 
-    def setupSPARXRound(self, stp_file, x0_in, x1_in, y0_in, y1_in,
-                        x0_after_L, x1_after_L,
-                        x0_out, x1_out, y0_out, y1_out):
+    def setupSPARXRound(
+        self,
+        stp_file,
+        x0_in,
+        x1_in,
+        y0_in,
+        y1_in,
+        x0_after_L,
+        x1_after_L,
+        x0_out,
+        x1_out,
+        y0_out,
+        y1_out,
+    ):
         """
         Model for differential behaviour of one step SPARX
         """
         command = ""
         command += self.L(x0_in, x1_in, x0_after_L, x1_after_L)
 
-        #Assert(x_out = L(A^a(x_in)) xor A^a(y_in))
+        # Assert(x_out = L(A^a(x_in)) xor A^a(y_in))
         command += "ASSERT(" + x0_out + " = "
         command += "BVXOR(" + x0_after_L + " , " + y0_in + ")"
         command += ");\n"
@@ -156,13 +213,12 @@ class SPARXRoundCipher(AbstractCipher):
         command += "BVXOR(" + x1_after_L + " , " + y1_in + ")"
         command += ");\n"
 
-        #Assert(y_out = A^a(x_in))
+        # Assert(y_out = A^a(x_in))
         command += "ASSERT({} = {});\n".format(y0_out, x0_in)
         command += "ASSERT({} = {});\n".format(y1_out, x1_in)
 
         stp_file.write(command)
         return
-
 
     def A(self, stp_file, x_in, y_in, x_out, y_out, w, wordsize):
         """
@@ -171,22 +227,22 @@ class SPARXRoundCipher(AbstractCipher):
         """
         command = ""
 
-        #Assert((x_in >>> 7) + y_in = x_out)
+        # Assert((x_in >>> 7) + y_in = x_out)
         command += "ASSERT("
-        command += stpcommands.getStringAdd(rotr(x_in, 7, wordsize),
-                                            y_in, x_out, wordsize)
+        command += stpcommands.getStringAdd(
+            rotr(x_in, 7, wordsize), y_in, x_out, wordsize
+        )
         command += ");\n"
 
-        #Assert(x_out xor (y_in <<< 2) = y_out)
+        # Assert(x_out xor (y_in <<< 2) = y_out)
         command += "ASSERT(" + y_out + " = "
         command += "BVXOR(" + x_out + ","
         command += rotl(y_in, 2, wordsize)
         command += "));\n"
 
-        #For weight computation
+        # For weight computation
         command += "ASSERT({0} = ~".format(w)
-        command += stpcommands.getStringEq(rotr(x_in, 7, wordsize),
-                                           y_in, x_out)
+        command += stpcommands.getStringEq(rotr(x_in, 7, wordsize), y_in, x_out)
         command += ");\n"
 
         stp_file.write(command)
@@ -201,14 +257,14 @@ class SPARXRoundCipher(AbstractCipher):
 
         # (x_in xor y_in)
         xor_x_y = "BVXOR(" + x_in + " , " + y_in + ")"
-        #(x_in xor y_in) <<< 8)
+        # (x_in xor y_in) <<< 8)
         rot_x_y = rotl(xor_x_y, 8, 16)
 
-        #Assert(x_out = x_in xor ((x_in xor y_in) <<< 8))
+        # Assert(x_out = x_in xor ((x_in xor y_in) <<< 8))
         command += "ASSERT(" + x_out + " = "
         command += "BVXOR(" + x_in + " , " + rot_x_y + "));\n"
 
-        #Assert(y_out = y_in xor ((x_in xor y_in) <<< 8))
+        # Assert(y_out = y_in xor ((x_in xor y_in) <<< 8))
         command += "ASSERT(" + y_out + " = "
         command += "BVXOR(" + y_in + " , " + rot_x_y + "));\n"
 
