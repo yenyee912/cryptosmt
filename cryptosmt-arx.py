@@ -18,6 +18,9 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 
 import yaml
 import os
+import pathlib
+
+libname = pathlib.Path().absolute()
 
 
 def startsearch(tool_parameters):
@@ -96,7 +99,7 @@ def loadparameters(args):
         "cipher": "sparxround",
         "rounds": 5,
         "skipround": 99,  # for sparxround only
-        "uppertrail": 5,  # Number of rounds for E0
+        "uppertrail": 2,  # Number of rounds for E0
         "lowertrail": 4,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
@@ -122,6 +125,9 @@ def loadparameters(args):
             # use this to set fixed starting for E0 trail search/ alpha
         },
         "abctMode": 1,  # use this to set mode to generate delta: ML, heuristic mode etc
+        # use absolute path or use Path()
+        "leftFilePath": "",
+        "rightFilePath": "",
         "blockedCharacteristics": [],
         "blockedUpperCharacteristics": [],
         "blockedLowerCharacteristics": [],

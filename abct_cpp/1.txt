@@ -1,4 +1,4 @@
-sparxround-L-6
+sparxround-L-6 please follow the format, first line for command
 355e,bf30,0,0,1.000000
 355e,bf30,0,1,0.500000
 355e,bf30,0,3,0.250000

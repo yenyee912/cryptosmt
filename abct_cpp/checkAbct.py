@@ -17,18 +17,17 @@ def sort_abct_result(inputList, limit=20):
     if limit > len(finalList):
         return finalList[: len(finalList)]
     else:
-        return finalList[limit]
+        return finalList[:limit]
 
 
 def parse_abct_prob(inputFilePath):
     # List to store tuples
     results = []
 
-    filePath = libname / "abct_cpp/1.txt"
-
+    filePath = inputFilePath
     # Open the file and read line by line
     with open(filePath, "r") as file:
-        file.readline()
+        file.readline()  # skip first line
         for line in file:
             # Split the line into values
             values = line.strip().split(",")
