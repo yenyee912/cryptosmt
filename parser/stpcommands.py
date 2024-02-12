@@ -1,4 +1,4 @@
-'''
+"""
 Created on Mar 28, 2014
 
 Provides functions for constructing the input file for STP.
@@ -6,9 +6,10 @@ Provides functions for constructing the input file for STP.
 
 Update 11 October 2021 (jesenteh)
 Added additional state words to blockCharacteristic to support WARP/TWINE
-'''
+"""
 
 import itertools
+
 
 def blockCharacteristic(stpfile, characteristic, wordsize):
     """
@@ -17,15 +18,17 @@ def blockCharacteristic(stpfile, characteristic, wordsize):
     # Only add state words (x, y, s)
     # Added additional state words for other ciphers (X)
     # TODO: extend for other ciphers
-    filtered_words = {var_name: var_value for var_name, var_value in
-                      characteristic.characteristic_data.items()
-                      if var_name.startswith('x') or
-                      var_name.startswith('y') or
-                      var_name.startswith('s') or
-                      var_name.startswith('X') or
-                      var_name.startswith('Y') or
-                      var_name.startswith('K') or
-                      var_name.startswith('v')}
+    filtered_words = {
+        var_name: var_value
+        for var_name, var_value in characteristic.characteristic_data.items()
+        if var_name.startswith("x")
+        or var_name.startswith("y")
+        or var_name.startswith("s")
+        or var_name.startswith("X")
+        or var_name.startswith("Y")
+        or var_name.startswith("K")
+        or var_name.startswith("v")
+    }
 
     blockingStatement = "ASSERT(NOT("
 
@@ -33,7 +36,7 @@ def blockCharacteristic(stpfile, characteristic, wordsize):
         blockingStatement += "BVXOR({}, {}) | ".format(key, value)
 
     blockingStatement = blockingStatement[:-2]
-    blockingStatement += ") = 0hex{});".format("0"*(wordsize // 4))
+    blockingStatement += ") = 0hex{});".format("0" * (wordsize // 4))
     stpfile.write(blockingStatement)
     return
 
@@ -51,15 +54,37 @@ def setupVariables(stpfile, variables, wordsize):
     """
     Adds a list of variables to the stp stpfile.
     """
-    stpfile.write(getStringForVariables(variables, wordsize) + '\n')
+    stpfile.write(getStringForVariables(variables, wordsize) + "\n")
+    return
+
+
+def assertBoomerangVariableValue(stpfile, a, b):
+    """
+    Adds an assert that 4bits LSB of a = b to the stp stpfile, to suit the 0,1,o,o / 0,1,e,ea
+    0bin1111111111110000= 4bits LSB
+    """
+    binaryString = format(int(b, 16), "04b")
+
+    # print(
+    #     "ASSERT(({} & 0bin0000000000001111) = 0bin000000000000{});\n".format(
+    #         a, binaryString
+    #     )
+    # )
+    stpfile.write(
+        "ASSERT(({} & 0bin0000000000001111) = 0bin000000000000{});\n".format(
+            a, binaryString
+        )
+    )
     return
 
 
 def assertVariableValue(stpfile, a, b):
     """
     Adds an assert that a = b to the stp stpfile.
+
     """
     stpfile.write("ASSERT({} = {});\n".format(a, b))
+
     return
 
 
@@ -79,7 +104,7 @@ def getStringForVariables(variables, wordsize):
 
 
 def assertNonZero(stpfile, variables, wordsize):
-    stpfile.write(getStringForNonZero(variables, wordsize) + '\n')
+    stpfile.write(getStringForNonZero(variables, wordsize) + "\n")
     return
 
 
@@ -105,6 +130,7 @@ def limitWeight(stpfile, weight, p, wordsize, ignoreMSBs=0):
     stpfile.write("ASSERT(BVLE(limitWeight, {0:#018b}));\n".format(weight))
     return
 
+
 def setupWeightComputationSum(stpfile, weight, p, wordsize, ignoreMSBs=0):
     """
     Assert that weight is equal to the sum of p.
@@ -120,6 +146,7 @@ def setupWeightComputationSum(stpfile, weight, p, wordsize, ignoreMSBs=0):
 
     stpfile.write("ASSERT(weight = {0:#018b});\n".format(weight))
     return
+
 
 def setupWeightComputation(stpfile, weight, p, wordsize, ignoreMSBs=0):
     """
@@ -166,13 +193,17 @@ def getStringEq(a, b, c):
 
 def getStringAdd(a, b, c, wordsize):
     command = "(((BVXOR((~{0} << 1)[{3}:0], ({1} << 1)[{3}:0])".format(
-        a, b, c, wordsize - 1)
+        a, b, c, wordsize - 1
+    )
     command += "& BVXOR((~{0} << 1)[{3}:0], ({2} << 1)[{3}:0]))".format(
-        a, b, c, wordsize - 1)
+        a, b, c, wordsize - 1
+    )
     command += " & BVXOR({0}, BVXOR({1}, BVXOR({2}, ({1} << 1)[{3}:0]))))".format(
-        a, b, c, wordsize - 1)
+        a, b, c, wordsize - 1
+    )
     command += " = 0bin{})".format("0" * wordsize)
     return command
+
 
 def getStringForAndDifferential(a, b, c):
     """
@@ -186,7 +217,8 @@ def getStringLeftRotate(value, rotation, wordsize):
     if rotation % wordsize == 0:
         return "{0}".format(value)
     command = "((({0} << {1})[{2}:0]) | (({0} >> {3})[{2}:0]))".format(
-        value, (rotation % wordsize), wordsize - 1, (wordsize - rotation) % wordsize)
+        value, (rotation % wordsize), wordsize - 1, (wordsize - rotation) % wordsize
+    )
 
     return command
 
@@ -195,8 +227,10 @@ def getStringRightRotate(value, rotation, wordsize):
     if rotation % wordsize == 0:
         return "{0}".format(value)
     command = "((({0} >> {1})[{2}:0]) | (({0} << {3})[{2}:0]))".format(
-        value, (rotation % wordsize), wordsize - 1, (wordsize - rotation) % wordsize)
+        value, (rotation % wordsize), wordsize - 1, (wordsize - rotation) % wordsize
+    )
     return command
+
 
 def add4bitSbox(sbox, variables):
     """
@@ -215,11 +249,11 @@ def add4bitSbox(sbox, variables):
 
     w ... hamming weight from the DDT table
     """
-    assert(len(sbox) == 16)
-    assert(len(variables) == 12)
+    assert len(sbox) == 16
+    assert len(variables) == 12
 
     # First compute the DDT
-    DDT = [[0]*16 for i in range(16)]
+    DDT = [[0] * 16 for i in range(16)]
 
     for a in range(16):
         for b in range(16):
@@ -242,11 +276,11 @@ def add4bitSbox(sbox, variables):
                 tmp.append((output_diff >> 1) & 1)
                 tmp.append((output_diff >> 0) & 1)
                 if DDT[input_diff][output_diff] == 2:
-                    tmp += [0, 1, 1, 1] # 2^-3
+                    tmp += [0, 1, 1, 1]  # 2^-3
                 elif DDT[input_diff][output_diff] == 4:
-                    tmp += [0, 0, 1, 1] # 2^-2
+                    tmp += [0, 0, 1, 1]  # 2^-2
                 elif DDT[input_diff][output_diff] == 8:
-                    tmp += [0, 0, 0, 1] # 2^-1
+                    tmp += [0, 0, 0, 1]  # 2^-1
                 elif DDT[input_diff][output_diff] == 16:
                     tmp += [0, 0, 0, 0]
                 trails.append(tmp)

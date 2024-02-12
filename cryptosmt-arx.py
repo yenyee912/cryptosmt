@@ -117,12 +117,20 @@ def loadparameters(args):
         "nummessages": 1,
         "timelimit": -1,
         "fixedVariables": {},
-        "boomerangVariables": {},  # switch?
+        "boomerangVariables": {},  # same function as fixedVariables
+        "lowerBoomerangVariables": {  # record the switch for E1 trail
+            "Y02": "0x0004",
+        },
+        "upperBoomerangVariables": {  # record the switch for E0 trail
+            "X02": "0x0000",
+            "X12": "0x0001",
+        },
         "lowerVariables": {
-            # use this to set fixed starting for E1 trail search/ delta
+            # use this to set fixed starting/ending for E1 trail search
         },
         "upperVariables": {
-            # use this to set fixed starting for E0 trail search/ alpha
+            # use this to set fixed starting/ending for E0 trail search
+            "X02": "0x0011",
         },
         "abctMode": 1,  # use this to set mode to generate delta: ML, heuristic mode etc
         # use absolute path or use Path()

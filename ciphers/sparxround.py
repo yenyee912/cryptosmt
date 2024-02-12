@@ -178,6 +178,9 @@ class SPARXRoundCipher(AbstractCipher):
             for key, value in parameters["fixedVariables"].items():
                 stpcommands.assertVariableValue(stp_file, key, value)
 
+            for key, value in parameters["boomerangVariables"].items():
+                stpcommands.assertBoomerangVariableValue(stp_file, key, value)
+
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 

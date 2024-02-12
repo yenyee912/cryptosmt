@@ -2,10 +2,61 @@
 import ctypes
 import pathlib
 import time
+import random
 
 libname = pathlib.Path().absolute()
 c_lib = ctypes.CDLL(libname / "abct_cpp/abct_prob.o")
 c_lib.abct_prob.restype = ctypes.c_longdouble
+
+
+class Combo:
+    def __init__(self, a, b, c, d):
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+
+    def __lt__(self, other):
+        return (self.a, self.b, self.c, self.d) < (other.a, other.b, other.c, other.d)
+
+
+def generateCombination(alphaBit, alphaPrimeBit, betaBit, betaPrime_bit, comboCount):
+    if (
+        alphaBit % 4 != 0
+        or alphaPrimeBit % 4 != 0
+        or betaBit % 4 != 0
+        or betaPrime_bit % 4 != 0
+    ):
+        print("please provide number of bits of LSB: 4,8,12,16")
+        return 0
+
+    comboList = set()
+
+    while len(comboList) < comboCount:
+        a = (random.randint(0, alphaBit) // 16) * 16
+        b = (random.randint(0, alphaPrimeBit) // 16) * 16 + 1
+
+        c = random.randint(0, betaBit)
+        d = random.randint(0, betaPrime_bit)
+
+        if (c % 2 == 0 and d % 2 == 0) or (c % 2 == 1 and d % 2 == 1):
+            c = c
+            d = d
+
+        elif c % 2 == 1 and d % 2 == 0:
+            c = c + 1
+            d = d
+
+        elif c % 2 == 0 and d % 2 == 1:
+            c = c
+            d = d + 1
+
+        randomCombo = Combo(a, b, c, d)
+
+        if randomCombo not in comboList:  # check for duplication
+            comboList.add(randomCombo)
+
+    return comboList
 
 
 def sort_abct_result(inputList, limit=20):

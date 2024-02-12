@@ -26,7 +26,8 @@ libname = pathlib.Path().absolute()
 def findARXBoomerangDifferential(cipher, parameters):
     """
     Performs the complete boomerang differential search
-    Probabilistic wwitch is done by ABCT.cpp
+    Probabilistic switch is done by ABCT.cpp
+    Check user setting, mode etc
     """
 
     if cipher.name not in ["sparxround", "cham"]:
@@ -39,62 +40,36 @@ def findARXBoomerangDifferential(cipher, parameters):
     print("Running initial boomerang search")
     print("----")
 
-    try:
-        # Find E0 then Em(heuristic) then E1, then clustering(todo)
-        boomerangProbList = computeBoomerangProb(cipher, parameters, start_time)
-        # bestBoomerangProb= sortProb(boomerangProbList)
-        # cluster E0 and E1
-        # print(boomerangProbList)
-        bestWeightTrail = min(boomerangProbList, key=lambda x: x[3])
-        candidateTrailList = [
-            num for num in boomerangProbList if num[3] == bestWeightTrail[3]
-        ]
+    # generate an E0 and a LIST of candidates E1
+    boomerangProb = computeBoomerangProb(cipher, parameters, start_time)
 
-        print("\n----")
-        print("Boomerang search completed.")
-        print("The weight of E0 trail is ", parameters["uweight"])
-        inputDiff = {
-            key: parameters["upperVariables"][key]
-            for key in list(parameters["upperVariables"].keys())[:4]
-        }
-        outputDiff = {
-            key: parameters["upperVariables"][key]
-            for key in list(parameters["upperVariables"].keys())[:-4]
-        }
-
-        print(
-            "Input: {} \nOutput: {} \nWeight of E0 Trail: {}".format(
-                inputDiff,
-                outputDiff,
-                parameters["uweight"],
-            )
+    # Compute other boomerang trails for the given input and output differences-- cluster the entire trail
+    while not search.reachedTimelimit(start_time, parameters["timelimit"]):
+        clusterProb = computeBoomerangProb(
+            cipher, parameters, start_time, boomerangProb
         )
-        print("The weight of best E1 trail is ", bestWeightTrail[3])
-        print("The trail(s) with same weight: ")
-        for trail in candidateTrailList:
-            print(
-                "Input: {} \nOutput: {} \nWeight of E1 Trail: {}, Total Weight: {}".format(
-                    trail[0], trail[1], trail[2], trail[3]
-                )
-            )
-
-        print("Final boomerang probability = ", math.log(bestWeightTrail[3], 2))
-
-    except:
-        print("Check cryptosmt setting.")
+        if clusterProb == 99:  # No more upper trails for the given input
+            break
+        elif clusterProb == 0:  # No lower trail found for the given limits
+            print("Trying a different upper trail")
+        else:  # found the second trail with such as setting
+            boomerangProb = clusterProb
+            print("---")
+            print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
 
 
-def computeBoomerangProb(cipher, parameters, timestamp):
+def computeBoomerangProb(cipher, parameters, timestamp, boomerangProb=0):
     """
-    call by main, responsible for
-    - arrange E0 and E1 search,
-    - check abct,
-    - clustering (in progress, not setting up yet),
-    - result boomerang prob for this input and output diff
-
-    # (now)caliberate for sparx in terms of input rotation, refer to excel
+    - Perform E0 and E1 search based on mode
+    - Do clustering?
+    - Return the full trails
     """
-    searchLimit = parameters["wordsize"]  # for upper
+
+    searchLimit = ""
+    if parameters["uweight"]:
+        searchLimit = parameters["uweight"]  # for upper
+    else:
+        searchLimit = parameters["wordsize"]  # for upper
 
     start_time = timestamp
 
@@ -129,7 +104,12 @@ def computeBoomerangProb(cipher, parameters, timestamp):
         parameters["uweight"] = parameters["sweight"]
 
     except:
-        print("No characteristic found for the given limits/ weights")
+        print(
+            "No characteristic found for the given limits. Please check the variables and weights setting.\n"
+        )
+        print("---")
+        # parameters["blockedUpperCharacteristics"].append(upperCharacteristic)
+        parameters["blockedLowerCharacteristics"].clear()
         # If no more upper characteristics can be found, best boomerang differential for the given input has been found
         parameters["uweight"] = parameters["sweight"]
         return 99
@@ -152,59 +132,21 @@ def computeBoomerangProb(cipher, parameters, timestamp):
             left_beta_prime = left_beta_prime << 1
             right_beta_prime = right_beta_prime << 1
 
-    if parameters["abctMode"] == 1:
-        if parameters["leftFilePath"] != "" and parameters["rightFilePath"] != "":
-            leftResult = checkAbct.parse_abct_prob(parameters["leftFilePath"])
-            rightResult = checkAbct.parse_abct_prob(parameters["rightFilePath"])
-
-            print(
-                "{} valid switches found for the left halves:".format(len(leftResult))
-            )
-            print(leftResult)
-            print(
-                "{} valid switches found for the right halves:".format(len(rightResult))
-            )
-            print(rightResult)
-        else:
-            print("Please provide corresponding path to file(s) to parse.")
-
-    elif parameters["abctMode"] == 2:
-        print(
-            "Computing switch for left halves- {}, {}\n---".format(
-                hex(left_beta), hex(left_beta_prime)
-            )
-        )
-        leftResult = checkAbct.compute_abct_switch(
-            left_beta, left_beta_prime, start_time
-        )
-        print(
-            "Computing switch for right halves- {}, {}\n---".format(
-                hex(left_beta), hex(left_beta_prime)
-            )
-        )
-        rightResult = checkAbct.compute_abct_switch(
-            right_beta, right_beta_prime, start_time
-        )
-        print("{} valid switches found for the left halves:".format(len(leftResult)))
-        print(leftResult, "\n")
-        print("{} valid switches found for the right halves:".format(len(rightResult)))
-        print(rightResult, "\n")
-
-    # leftResult = [
-    #     (0, 0, 1),
-    #     # (0, 1, 0.5),
-    #     # (1, 0, 0.5),
-    #     # (1, 1, 0.5),
-    #     # (2, 0, 0.9375),
-    # ]
-    # rightResult = [
-    #     (0, 1, 0.5),
-    #     # (0, 4, 0.5),
-    #     # (1, 0, 0.5),
-    #     # (1, 1, 0.5),
-    #     # (2, 0, 0.5),
-    #     # (6, 0, 0.625),
-    # ]
+    leftResult = [
+        (0, 0, 1),
+        # (0, 1, 0.5),
+        # (1, 0, 0.5),
+        # (1, 1, 0.5),
+        # (2, 0, 0.9375),
+    ]
+    rightResult = [
+        (0, 1, 0.5),
+        # (0, 4, 0.5),
+        # (1, 0, 0.5),
+        # (1, 1, 0.5),
+        # (2, 0, 0.5),
+        # (6, 0, 0.625),
+    ]
 
     combinationCount = 0
     combinationLimit = len(leftResult) * len(rightResult)
@@ -355,20 +297,24 @@ def searchDifferentialTrail(
         )
     )
 
-    if boomerangFace == "lower":
-        print("MAX weight of the lower trail= ", searchLimit)
-    print("---")
+    print("MAX weight of the {} trail= {}\n".format(boomerangFace, searchLimit))
+    print("---\n")
     start_time = timestamp
     # Set target weight for trail
     parameters["sweight"] = parameters[weight]
-    parameters["fixedVariables"].clear()  # will not using fixedVariables params
+
+    # Clear the variables set
+    parameters["fixedVariables"].clear()
+    parameters["boomerangVariables"].clear()
 
     # Fix starting point if it has been set, ask user to set input, no fixed pointt
-    if trail == "lowertrail" and parameters["lowerVariables"]:
+    if trail == "lowertrail":
         parameters["fixedVariables"] = parameters["lowerVariables"]
+        parameters["boomerangVariables"] = parameters["lowerBoomerangVariables"]
 
-    elif trail == "uppertrail" and parameters["upperVariables"]:
+    elif trail == "uppertrail":
         parameters["fixedVariables"] = parameters["upperVariables"]
+        parameters["boomerangVariables"] = parameters["upperBoomerangVariables"]
 
     characteristic = ""
 
@@ -446,7 +392,7 @@ def searchDifferentialTrail(
         # print("----")
 
     if parameters["sweight"] >= parameters["endweight"] and boomerangFace == "upper":
-        print("Weight limit has been reached. Ending search.")
+        print("Weight limit has been reached for ONLY E0, ending search.")
         quit()
 
     return characteristic
