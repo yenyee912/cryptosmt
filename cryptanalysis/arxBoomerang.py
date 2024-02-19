@@ -43,19 +43,19 @@ def findARXBoomerangDifferential(cipher, parameters):
     # generate an E0 and a LIST of candidates E1
     boomerangProb = computeBoomerangProb(cipher, parameters, start_time)
 
-    # Compute other boomerang trails for the given input and output differences-- cluster the entire trail
-    while not search.reachedTimelimit(start_time, parameters["timelimit"]):
-        clusterProb = computeBoomerangProb(
-            cipher, parameters, start_time, boomerangProb
-        )
-        if clusterProb == 99:  # No more upper trails for the given input
-            break
-        elif clusterProb == 0:  # No lower trail found for the given limits
-            print("Trying a different upper trail")
-        else:  # found the second trail with such as setting
-            boomerangProb = clusterProb
-            print("---")
-            print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
+    # # Compute other boomerang trails for the given input and output differences-- cluster the entire trail
+    # while not search.reachedTimelimit(start_time, parameters["timelimit"]):
+    #     clusterProb = computeBoomerangProb(
+    #         cipher, parameters, start_time, boomerangProb
+    #     )
+    #     if clusterProb == 99:  # No more upper trails for the given input
+    #         break
+    #     elif clusterProb == 0:  # No lower trail found for the given limits
+    #         print("Trying a different upper trail")
+    #     else:  # found the second trail with such as setting
+    #         boomerangProb = clusterProb
+    #         print("---")
+    #         print("Improved boomerang probability = " + str(math.log(boomerangProb, 2)))
 
 
 def computeBoomerangProb(cipher, parameters, timestamp, boomerangProb=0):

@@ -21,6 +21,9 @@ class Combo:
 
 
 def generateCombination(alphaBit, alphaPrimeBit, betaBit, betaPrime_bit, comboCount):
+    """
+    generate random valid switches with 0,1,(odd,odd) / (even,even)
+    """
     if (
         alphaBit % 4 != 0
         or alphaPrimeBit % 4 != 0
@@ -71,6 +74,20 @@ def sort_abct_result(inputList, limit=20):
         return finalList[:limit]
 
 
+def check_abct_prob(alpha, alpha_prime, beta, beta_prime):
+    prob = c_lib.abct_prob(
+        ctypes.c_uint32(alpha),
+        ctypes.c_uint32(alpha_prime),
+        ctypes.c_uint32(beta),
+        ctypes.c_uint32(beta_prime),
+    )
+
+    # turn off printing?
+    print(f"{hex(alpha)}, {hex(alpha_prime)}, {hex(beta)}, {hex(beta_prime)}, {prob}")
+
+    return prob
+
+
 def parse_abct_prob(inputFilePath):
     # List to store tuples
     results = []
@@ -94,33 +111,15 @@ def parse_abct_prob(inputFilePath):
     return finalResult
 
 
-def check_abct_prob(alpha, alpha_prime, beta, beta_prime):
-    # Sample data for our call:
-    # alpha, alpha_prime, beta, beta_prime = 0x355E, 0xBF30, 0x1, 0x2
-
-    # run abct_prob() in cpp to get the prob of the 4 params
-    prob = c_lib.abct_prob(
-        ctypes.c_uint32(alpha),
-        ctypes.c_uint32(alpha_prime),
-        ctypes.c_uint32(beta),
-        ctypes.c_uint32(beta_prime),
-    )
-
-    # turn off printing?
-    print(f"{hex(alpha)}, {hex(alpha_prime)}, {hex(beta)}, {hex(beta_prime)}, {prob}")
-
-    return prob
-
-
 def compute_abct_switch(x0, x1, timestamp):
     """
-    return list of tuples
+    return top 20 valid switches between 0 to 0xff
     result= [(beta, beta', prob),(beta, beta', prob), ... ()]
     """
     consecutiveZeroCount = 0
     candidateList = []
-    for beta in range(0x4):
-        for beta_prime in range(0x3):
+    for beta in range(0x2):  # for demo purpose, change to 0xff if needed
+        for beta_prime in range(0x2):
             prob = c_lib.abct_prob(
                 ctypes.c_uint32(x0),
                 ctypes.c_uint32(x1),
@@ -141,6 +140,5 @@ def compute_abct_switch(x0, x1, timestamp):
                 consecutiveZeroCount = 0
                 break
 
-    # do some sorting algo to compare prob
     finalResult = sort_abct_result(candidateList)
     return finalResult

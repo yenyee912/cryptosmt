@@ -9,8 +9,8 @@ Note:
 To support WARP, the modified stpcommands must be included because the state words for WARP/TWINE is missing
 """
 
-from cryptanalysis import arxBoomerang, search, boomerang
-from ciphers import simon, speck, simonlinear, warp
+from cryptanalysis import newarxBoomerang, search, boomerang
+from ciphers import simon, speck, simonlinear, warp, sparxroundBoom
 from ciphers import sparx, sparxround, cham
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
 
@@ -34,6 +34,7 @@ def startsearch(tool_parameters):
         "simonlinear": simonlinear.SimonLinearCipher(),
         "warp": warp.WarpCipher(),
         "sparxround": sparxround.SPARXRoundCipher(),
+        "sparxroundBoom": sparxroundBoom.SPARXRoundCipher(),
         "cham": cham.CHAMCipher(),
     }
 
@@ -59,7 +60,7 @@ def startsearch(tool_parameters):
     elif tool_parameters["mode"] == 5:
         boomerang.computeFeistelBoomerangDifferential(cipher, tool_parameters)
     elif tool_parameters["mode"] == 6:
-        arxBoomerang.findARXBoomerangDifferential(cipher, tool_parameters)
+        newarxBoomerang.findARXBoomerangDifferential(cipher, tool_parameters)
     return
 
 
@@ -98,7 +99,7 @@ def loadparameters(args):
     params = {
         "cipher": "sparxround",
         "rounds": 5,  # doesnt matter in abct mode
-        "skipround": 99,  # for sparxround only
+        "skipround": 99,  # for sparxround and sparxroundBoom only
         "uppertrail": 3,  # Number of rounds for E0
         "lowertrail": 4,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
@@ -120,13 +121,10 @@ def loadparameters(args):
         "boomerangVariables": {},  # same function as fixedVariables
         "lowerBoomerangVariables": {  # record the switch for E1 trail
             "Y02": "0x0004",
-            "X01": "0x0001",
         },
         "upperBoomerangVariables": {  # record the switch for E0 trail
             "X03": "0x0000",
             "X13": "0x0001",
-            "Y03": "0x0000",
-            "Y13": "0x0001",
         },
         "lowerVariables": {
             # use this to set fixed starting/ending for E1 trail search
