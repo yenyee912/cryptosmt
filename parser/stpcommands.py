@@ -58,6 +58,40 @@ def setupVariables(stpfile, variables, wordsize):
     return
 
 
+def assertABCTVariables(stpfile, cipher, upper, lower):
+    """
+    Fix the input/outpu diff pattern for e1 and e0
+    assert last 4 significant bits to be 0x0(X0), 0x1(X1)
+    assert last 4 significant bits to be both odd or both even, (X0),(X1)--> lower trail
+
+    "- X00: 0x" << beta_x
+    "- X10: 0x" << (ROTL(beta_prime_x,2) xor beta_x)
+    "- Y00: 0x" << beta_y
+    "- Y10: 0x" << (ROTL(beta_prime_y,2) xor beta_y)
+    """
+
+    stpfile.write(f"ASSERT((X0{upper} & 0b0000000000001111) = 0b0000000000000000);\n")
+    # some patterns with first 2 bits== 0,1 and last 2 bits==0 will produce X1 end with 0x1(4bits)
+    stpfile.write(f"ASSERT((X1{upper} & 0b1100000000000011) = 0b0100000000000000);\n")
+    stpfile.write(f"ASSERT((Y0{upper} & 0b0000000000001111) = 0b0000000000000000);\n")
+    stpfile.write(f"ASSERT((Y1{upper} & 0b1100000000000011) = 0b0100000000000000);\n")
+
+    # lower trail
+    stpfile.write(
+        f"ASSERT(X0{lower} & 0b0000000000000001 =  X1{lower} & 0b0000000000000001);\n"
+    )
+    stpfile.write(
+        f"ASSERT(Y0{lower} & 0b0000000000000001 =  Y1{lower} & 0b0000000000000001);\n"
+    )
+    stpfile.write(
+        f"ASSERT(NOT(X0{lower}|X1{lower}|Y0{lower}|Y1{lower}) = 0b0000000000000000);\n"
+    )
+    stpfile.write(
+        f"ASSERT(NOT(X0{upper}|X1{upper}|Y0{upper}|Y1{upper}) = 0b0000000000000000);\n"
+    )
+    return
+
+
 def assertBoomerangVariableValue(stpfile, a, b):
     """
     Adds an assert that 4bits LSB of a = b to the stp stpfile, to suit the 0,1,o,o / 0,1,e,ea
@@ -65,13 +99,8 @@ def assertBoomerangVariableValue(stpfile, a, b):
     """
     binaryString = format(int(b, 16), "04b")
 
-    # print(
-    #     "ASSERT(({} & 0bin0000000000001111) = 0bin000000000000{});\n".format(
-    #         a, binaryString
-    #     )
-    # )
     stpfile.write(
-        "ASSERT(({} & 0bin0000000000001111) = 0bin000000000000{});\n".format(
+        "ASSERT(({} & 0b0000000000001111) = 0b000000000000{});\n".format(
             a, binaryString
         )
     )

@@ -125,9 +125,6 @@ class SPARXRoundCipher(AbstractCipher):
                         wright[i],
                         wordsize,
                     )
-                    # print(
-                    #     "right A3, y0_after_A[i], y1_after_A[i]", y0_after_A[i], " ",y1_after_A[i])
-                    # every step do L-box and feistel (if this is turn off, round 3 become all 0)
                     self.setupSPARXRound(
                         stp_file,
                         x0_after_A[i],

@@ -9,7 +9,7 @@ Note:
 To support WARP, the modified stpcommands must be included because the state words for WARP/TWINE is missing
 """
 
-from cryptanalysis import newarxBoomerang, search, boomerang
+from cryptanalysis import newarxBoomerang, search, boomerang, newBoom
 from ciphers import simon, speck, simonlinear, warp, sparxroundBoom
 from ciphers import sparx, sparxround, cham
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
@@ -61,6 +61,8 @@ def startsearch(tool_parameters):
         boomerang.computeFeistelBoomerangDifferential(cipher, tool_parameters)
     elif tool_parameters["mode"] == 6:
         newarxBoomerang.findARXBoomerangDifferential(cipher, tool_parameters)
+    elif tool_parameters["mode"] == 7:
+        newBoom.findARXBoomerangDifferentialByMatchSwitch(cipher, tool_parameters)
     return
 
 
@@ -97,16 +99,17 @@ def loadparameters(args):
     # Load default values
 
     params = {
-        "cipher": "sparxround",
-        "rounds": 5,  # doesnt matter in abct mode
-        "skipround": 99,  # for sparxround and sparxroundBoom only
-        "uppertrail": 3,  # Number of rounds for E0
-        "lowertrail": 4,  # Number of rounds for E1
+        "cipher": "sparxroundBoom",
+        "rounds": 5,  # uppertrail+ switchround=1r+ lowertrail
+        "skipround": 99,
+        "switchround": 3,  # which #round to switch
+        "uppertrail": 2,  # Number of rounds for E0
+        "lowertrail": 2,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
         "upperlimit": 0,  # cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
         "lowerlimit": 0,  # cluster up to +4 (128/32=4) - Will be clustered often, set to a conservative value
-        "mode": 6,
+        "mode": 7,
         "wordsize": 16,
         # "blocksize" : 64,
         "sweight": 0,
@@ -118,14 +121,19 @@ def loadparameters(args):
         "nummessages": 1,
         "timelimit": -1,
         "fixedVariables": {},
-        "boomerangVariables": {},  # same function as fixedVariables
-        "lowerBoomerangVariables": {  # record the switch for E1 trail
-            "Y02": "0x0004",
-        },
-        "upperBoomerangVariables": {  # record the switch for E0 trail
+        "boomerangVariables": {
+            # we need beta to be 0, 1
             "X03": "0x0000",
             "X13": "0x0001",
-        },
+            "Y03": "0x0000",
+            "Y13": "0x0001",
+            # input for e1 have to start from #switch+1
+            # e0= r0-r4, swicth r5 (all empty), e1=r6-rs
+            "Y06": "0x0004",
+        },  # same function as fixedVariables
+        # ---- params for abct
+        "lowerBoomerangVariables": {},  # record the switch for E1 trail
+        "upperBoomerangVariables": {},  # record the switch for E0 trail
         "lowerVariables": {
             # use this to set fixed starting/ending for E1 trail search
         },
