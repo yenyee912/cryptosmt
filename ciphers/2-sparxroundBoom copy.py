@@ -96,65 +96,54 @@ class SPARXRoundCipher(AbstractCipher):
 
                 # the model do linear layer at r3-1, then show result in r3, so we need i+1
                 if (i + 1) % self.rounds_per_step == 0:
-                    if parameters["switchround"] == i:  # if switch at front part
-                        self.setupSPARXRound(
-                            stp_file,
-                            x0_after_A[i],
-                            x1_after_A[i],
-                            y0_after_A[i],
-                            y1_after_A[i],
-                            x0_after_L[i],
-                            x1_after_L[i],
-                            x0[i + 1],
-                            x1[i + 1],
-                            y0[i + 1],
-                            y1[i + 1],
-                        )
-                    elif parameters["switchround"] == i + 1:  # if switch at rear part
-                        self.setupSPECKEYRound(
-                            stp_file,
-                            x0[i],
-                            x1[i],
-                            x0_after_A[i],
-                            x1_after_A[i],
-                            wleft[i],
-                            wordsize,
-                        )
-                        self.setupSPECKEYRound(
-                            stp_file,
-                            y0[i],
-                            y1[i],
-                            y0_after_A[i],
-                            y1_after_A[i],
-                            wright[i],
-                            wordsize,
-                        )
+                    self.setupSPECKEYRound(
+                        stp_file,
+                        x0[i],
+                        x1[i],
+                        x0_after_A[i],
+                        x1_after_A[i],
+                        wleft[i],
+                        wordsize,
+                    )
+                    self.setupSPECKEYRound(
+                        stp_file,
+                        y0[i],
+                        y1[i],
+                        y0_after_A[i],
+                        y1_after_A[i],
+                        wright[i],
+                        wordsize,
+                    )
 
+                    self.setupSPARXRound(
+                        stp_file,
+                        x0_after_A[i],
+                        x1_after_A[i],
+                        y0_after_A[i],
+                        y1_after_A[i],
+                        x0_after_L[i],
+                        x1_after_L[i],
+                        x0[i + 1],
+                        x1[i + 1],
+                        y0[i + 1],
+                        y1[i + 1],
+                    )
                 else:
-                    if parameters["switchround"] == i:
-                        continue
-                    else:
-                        # do round function left (SPECKEY)
-                        self.setupSPECKEYRound(
-                            stp_file,
-                            x0[i],
-                            x1[i],
-                            x0[i + 1],
-                            x1[i + 1],
-                            wleft[i],
-                            wordsize,
-                        )
-                        # do round function right (SPECKEY)
-                        self.setupSPECKEYRound(
-                            stp_file,
-                            y0[i],
-                            y1[i],
-                            y0[i + 1],
-                            y1[i + 1],
-                            wright[i],
-                            wordsize,
-                        )
-                        # stp_file.write("i first\n")
+                    # do round function left (SPECKEY)
+                    self.setupSPECKEYRound(
+                        stp_file, x0[i], x1[i], x0[i + 1], x1[i + 1], wleft[i], wordsize
+                    )
+                    # do round function right (SPECKEY)
+                    self.setupSPECKEYRound(
+                        stp_file,
+                        y0[i],
+                        y1[i],
+                        y0[i + 1],
+                        y1[i + 1],
+                        wright[i],
+                        wordsize,
+                    )
+                    # stp_file.write("i first\n")
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x0 + x1 + y0 + y1, wordsize)

@@ -104,7 +104,7 @@ def loadparameters(args):
         "skipround": 99,
         "switchround": 3,  # which #round to switch
         "uppertrail": 2,  # Number of rounds for E0
-        "lowertrail": 2,  # Number of rounds for E1
+        "lowertrail": 3,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
         "upperlimit": 0,  # cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
@@ -121,29 +121,16 @@ def loadparameters(args):
         "nummessages": 1,
         "timelimit": -1,
         "fixedVariables": {},
-        "boomerangVariables": {
-            # we need beta to be 0, 1
-            "X03": "0x0000",
-            "X13": "0x0001",
-            "Y03": "0x0000",
-            "Y13": "0x0001",
-            # input for e1 have to start from #switch+1
-            # e0= r0-r4, swicth r5 (all empty), e1=r6-rs
-            "Y06": "0x0004",
-        },  # same function as fixedVariables
+        "boomerangVariables": {},  # for system use only
         # ---- params for abct
-        "lowerBoomerangVariables": {},  # record the switch for E1 trail
-        "upperBoomerangVariables": {},  # record the switch for E0 trail
+        "lowerBoomerangVariables": {},
+        "upperBoomerangVariables": {},
         "lowerVariables": {
-            # use this to set fixed starting/ending for E1 trail search
+            # user use to set fixed starting/ending for E1 trail search
         },
         "upperVariables": {
-            # use this to set fixed starting/ending for E0 trail search
+            # user use to set fixed starting/ending for E0 trail search
         },
-        "abctMode": 1,  # use this to set mode to generate delta: ML, heuristic mode etc
-        # use absolute path or use Path()
-        "leftFilePath": "",
-        "rightFilePath": "",
         "blockedCharacteristics": [],
         "blockedUpperCharacteristics": [],
         "blockedLowerCharacteristics": [],

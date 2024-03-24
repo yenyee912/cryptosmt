@@ -1,19 +1,19 @@
-'''
+"""
 Created on Apr 25, 2014
 
 @author: stefan
 
 Update: 11 October, 2021 (jesenteh)
 Added functions to return input and output differences
-'''
+"""
 
 import itertools
 
 
 class DifferentialCharacteristic(object):
-    '''
+    """
     This class represents a single differential characteristic.
-    '''
+    """
 
     characteristic_data = None
     print_format = None
@@ -41,32 +41,39 @@ class DifferentialCharacteristic(object):
             for word in self.print_format:
                 try:
                     # Add word to table
-                    if word == 'w' or word == 'wl' or word == 'wr':
-                        weight = self.characteristic_data[word+str(rnd)]
+                    if word == "w" or word == "wl" or word == "wr":
+                        weight = self.characteristic_data[word + str(rnd)]
                         # Print hw(weight) or weight depending on the cipher
-                        if self.cipher.name == "keccakdiff" or \
-                           self.cipher.name == "ketje" or \
-                           self.cipher.name == "ascon":
+                        if (
+                            self.cipher.name == "keccakdiff"
+                            or self.cipher.name == "ketje"
+                            or self.cipher.name == "ascon"
+                        ):
                             tmp_row.append("-" + str(int(weight, 16)))
-                        #TODO: Temporary hack for cham64
-                        elif self.cipher.name == "cham" or \
-                                self.cipher.name == "speck" or \
-                                self.cipher.name == "sparxround1r" or \
-                                self.cipher.name == "sparxround" :
+                        # TODO: Temporary hack for cham64
+                        elif (
+                            self.cipher.name == "cham"
+                            or self.cipher.name == "speck"
+                            or self.cipher.name == "sparxround1r"
+                            or self.cipher.name == "sparxround"
+                        ):
 
                             tmp_row.append(
-                                "-" + str(bin(int(weight, 16) & 0b0111111111111111).count('1')))
+                                "-"
+                                + str(
+                                    bin(int(weight, 16) & 0b0111111111111111).count("1")
+                                )
+                            )
                         else:
-                            tmp_row.append(
-                                "-" + str(bin(int(weight, 16)).count('1')))
+                            tmp_row.append("-" + str(bin(int(weight, 16)).count("1")))
                     else:
-                        tmp_row.append(self.characteristic_data[word+str(rnd)])
+                        tmp_row.append(self.characteristic_data[word + str(rnd)])
                 except KeyError:
                     tmp_row.append("none")
             if tmp_row:
                 data.append(tmp_row)
         return data
-    
+
     def printText(self):
         """
         Prints a table from the data structure.
@@ -83,18 +90,17 @@ class DifferentialCharacteristic(object):
         header_str = "Rounds\t"
         data_str = ""
         current_row = 0
-
         for entry in header:
             header_str += entry.ljust(col_width)
         for row in data:
-            data_str += str(current_row) + '\t'
+            data_str += str(current_row) + "\t"
             current_row += 1
             for entry in row:
                 data_str += entry.ljust(col_width)
-            data_str += '\n'
+            data_str += "\n"
 
         print(header_str)
-        print("-"*len(header_str))
+        print("-" * len(header_str))
         print(data_str)
         print("Weight: " + str(int(self.weight, 16)))
         return
@@ -110,14 +116,16 @@ class DifferentialCharacteristic(object):
         last_probability = None
         for idx, entry in enumerate(data):
             new_node = "rnd{}".format(idx)
-            for value in entry[:-1]: # Last entry should always be weight
+            for value in entry[:-1]:  # Last entry should always be weight
                 new_node += str(value)
 
             # Add label shortended to first two values
-            result += new_node + " [label=\"{},{}\"];\n".format(entry[0], entry[1]) 
+            result += new_node + ' [label="{},{}"];\n'.format(entry[0], entry[1])
             if last_node != "":
                 # Add edge
-                result += "{} -> {} [label=\"{}\"];\n".format(last_node, new_node, last_probability)
+                result += '{} -> {} [label="{}"];\n'.format(
+                    last_node, new_node, last_probability
+                )
             last_probability = entry[2]
             last_node = new_node
         return result
@@ -126,7 +134,7 @@ class DifferentialCharacteristic(object):
         """
         Print the trail as a graph in .dot format.
         """
-        
+
         print("digraph graphname {")
         print(self.getDOTString())
         print("}")
@@ -153,7 +161,7 @@ class DifferentialCharacteristic(object):
         for label in header:
             header_string += label + " & "
         result += header_string[:-2] + "\\\\\n"
-        
+
         result += "\\midrule\n"
 
         for idx, entry in enumerate(data):
@@ -166,9 +174,6 @@ class DifferentialCharacteristic(object):
         result += "\\end{tabular}\n"
         result += "\\end{document}\n"
 
-
-
-
         return result
 
     def getOutputDiff(self):
@@ -176,7 +181,7 @@ class DifferentialCharacteristic(object):
         Get the output difference of a trail
         """
         data = self.getData()
-        
+
         return data[self.num_rounds][0]
 
     def getInputDiff(self):
@@ -184,5 +189,5 @@ class DifferentialCharacteristic(object):
         Get the Input difference of a trail
         """
         data = self.getData()
-        
+
         return data[0][0]

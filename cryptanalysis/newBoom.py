@@ -25,7 +25,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
     switchRound = parameters["switchround"]
 
     # print("beforeeee-----", parameters["skipround"])
-
+    parameters["rounds"] = parameters["uppertrail"] + parameters["lowertrail"] + 1
     characteristic = searchDifferentialTrail(
         cipher,
         parameters,
@@ -86,13 +86,12 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             "sparxroundBoom", left_beta, left_beta_prime, right_beta, right_beta_prime
         )
 
-        print(
-            "\n checking ==== \n",
-            left_beta,
-            left_beta_prime,
-            right_beta,
-            right_beta_prime,
-        )
+        # print(
+        #     left_beta,
+        #     left_beta_prime,
+        #     right_beta,
+        #     right_beta_prime,
+        # )
         leftSwitchProb = checkAbct.check_abct_prob(
             left_beta, left_beta_prime, left_delta, left_delta_prime
         )
@@ -110,7 +109,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             print(
                 f"{lowerRound-upperRound-1} rounds lowertrail: \n{parameters['lowerVariables']}"
             )
-            print("after-----", parameters["skipround"])
+            # print("after-----", parameters["skipround"])
         else:
             print("Either side of the switch is INVALID. Try again")
 
@@ -158,9 +157,9 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
         )
 
         # Construct problem instance for given parameters
-        stp_file = "tmp/complete-{}{}-{}-{}.stp".format(
+        stp_file = "tmp/{}-{}-{}-whole.stp".format(
             cipher.name,
-            parameters["wordsize"],
+            # parameters["wordsize"],
             parameters["rounds"],
             timestamp,
         )
@@ -192,6 +191,7 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
                     )
                 )
             )
+            print("X0L= (X0A^X1A)<<8 ^X0A")
             if parameters["boolector"]:
                 characteristic = parsesolveroutput.getCharBoolectorOutput(
                     result, cipher, parameters["rounds"]
@@ -205,7 +205,7 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
             break
         parameters["sweight"] += 1
         # print("----")
-    parameters["skipround"] = 55
+    # parameters["skipround"] = 55
     return characteristic
 
 
@@ -236,6 +236,8 @@ def inputRotation(cipher, x0, x1, y0, y1, round=0):
         print(
             "Ciphers rotation not exist. Please check again or add new rotation properties."
         )
-
-    print(x0, x1, y0, y1)
+    x0 &= 0xFFFF
+    x1 &= 0xFFFF
+    y0 &= 0xFFFF
+    y1 &= 0xFFFF
     return (x0, x1, y0, y1)

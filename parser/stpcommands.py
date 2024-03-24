@@ -58,7 +58,7 @@ def setupVariables(stpfile, variables, wordsize):
     return
 
 
-def assertABCTVariables(stpfile, cipher, upper, lower):
+def assertABCTVariables(stpfile, upper, lower):
     """
     Fix the input/outpu diff pattern for e1 and e0
     assert last 4 significant bits to be 0x0(X0), 0x1(X1)
