@@ -35,63 +35,89 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
     # get a,b,d,g from char, feed to abct, see if match
     # use try, might not have trail generated
     try:
-        upperRound = parameters["uppertrail"]
+        upperEndRound = parameters["uppertrail"]
         left_alpha = int(characteristic.getData()[0][0], 16)
         left_alpha_prime = int(characteristic.getData()[0][1], 16)
         right_alpha = int(characteristic.getData()[0][2], 16)
         right_alpha_prime = int(characteristic.getData()[0][3], 16)
 
-        left_beta = int(characteristic.getData()[upperRound][0], 16)
-        left_beta_prime = int(characteristic.getData()[upperRound][1], 16)
-        right_beta = int(characteristic.getData()[upperRound][2], 16)
-        right_beta_prime = int(characteristic.getData()[upperRound][3], 16)
+        left_beta = int(characteristic.getData()[upperEndRound][0], 16)
+        left_beta_prime = int(characteristic.getData()[upperEndRound][1], 16)
+        right_beta = int(characteristic.getData()[upperEndRound][2], 16)
+        right_beta_prime = int(characteristic.getData()[upperEndRound][3], 16)
 
-        lowerRound = switchRound + 1
-        left_delta = int(characteristic.getData()[lowerRound][0], 16)
-        left_delta_prime = int(characteristic.getData()[lowerRound][1], 16)
-        right_delta = int(characteristic.getData()[lowerRound][2], 16)
-        right_delta_prime = int(characteristic.getData()[lowerRound][3], 16)
-
-        # for index purpose, trail start from 0
-        lowerRound += parameters["lowertrail"] - 1
-        left_gamma = int(characteristic.getData()[lowerRound][0], 16)
-        left_gamma_prime = int(characteristic.getData()[lowerRound][1], 16)
-        right_gamma = int(characteristic.getData()[lowerRound][2], 16)
-        right_gamma_prime = int(characteristic.getData()[lowerRound][3], 16)
+        lowerStartRound = switchRound + 1
+        if lowerStartRound % 3 == 0:  # take the output from A2
+            left_delta = int(characteristic.getData()[switchRound][4], 16)
+            left_delta_prime = int(characteristic.getData()[switchRound][5], 16)
+            right_delta = int(characteristic.getData()[switchRound][6], 16)
+            right_delta_prime = int(characteristic.getData()[switchRound][7], 16)
+        else:
+            left_delta = int(characteristic.getData()[lowerStartRound][0], 16)
+            left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
+            right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
+            right_delta_prime = int(characteristic.getData()[lowerStartRound][3], 16)
+        # print(lowerStartRound + parameters["lowertrail"])
+        lowerEndRound = lowerStartRound + parameters["lowertrail"] - 1
+        left_gamma = int(characteristic.getData()[lowerEndRound][0], 16)
+        left_gamma_prime = int(characteristic.getData()[lowerEndRound][1], 16)
+        right_gamma = int(characteristic.getData()[lowerEndRound][2], 16)
+        right_gamma_prime = int(characteristic.getData()[lowerEndRound][3], 16)
 
         parameters["upperVariables"] = {
             "X00": "0x" + format(left_alpha, "04x"),
             "X10": "0x" + format(left_alpha_prime, "04x"),
             "Y00": "0x" + format(right_alpha, "04x"),
             "Y10": "0x" + format(right_alpha_prime, "04x"),
-            f"X0{upperRound}": "0x" + format(left_beta, "04x"),
-            f"X1{upperRound}": "0x" + format(left_beta_prime, "04x"),
-            f"Y0{upperRound}": "0x" + format(right_beta, "04x"),
-            f"Y1{upperRound}": "0x" + format(right_beta_prime, "04x"),
+            f"X0{upperEndRound}": "0x" + format(left_beta, "04x"),
+            f"X1{upperEndRound}": "0x" + format(left_beta_prime, "04x"),
+            f"Y0{upperEndRound}": "0x" + format(right_beta, "04x"),
+            f"Y1{upperEndRound}": "0x" + format(right_beta_prime, "04x"),
         }
+
+        # # could be x0A, edit later
         parameters["lowerVariables"] = {
-            f"X0{switchRound+1}": "0x" + format(left_delta, "04x"),
-            f"X1{switchRound+1}": "0x" + format(left_delta_prime, "04x"),
-            f"Y0{switchRound+1}": "0x" + format(right_delta, "04x"),
-            f"Y1{switchRound+1}": "0x" + format(right_delta_prime, "04x"),
-            f"X0{lowerRound}": "0x" + format(left_gamma, "04x"),
-            f"X1{lowerRound}": "0x" + format(left_gamma_prime, "04x"),
-            f"Y0{lowerRound}": "0x" + format(right_gamma, "04x"),
-            f"Y1{lowerRound}": "0x" + format(right_gamma_prime, "04x"),
+            f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
+            f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
+            f"Y0{lowerStartRound}": "0x" + format(right_delta, "04x"),
+            f"Y1{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
+            f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
+            f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
+            f"Y0{lowerEndRound}": "0x" + format(right_gamma, "04x"),
+            f"Y1{lowerEndRound}": "0x" + format(right_gamma_prime, "04x"),
         }
 
-        print("matching the switch...")
-        # need to rotate the input
-        left_beta, left_beta_prime, right_beta, right_beta_prime = inputRotation(
-            "sparxroundBoom", left_beta, left_beta_prime, right_beta, right_beta_prime
+        print("Obtaining characteristics for trail E0 and E1")
+        print("L     |     R ")
+        print(
+            f"Upper trail(E0): X0{upperEndRound}:{hex(left_beta)}, {hex(left_beta_prime)} | Y0{upperEndRound}:{hex(right_beta)}, {hex(right_beta_prime)}"
         )
-
-        # print(
-        #     left_beta,
-        #     left_beta_prime,
-        #     right_beta,
-        #     right_beta_prime,
-        # )
+        print(
+            f"Lower trail(E1): X0{lowerStartRound}:{hex(left_delta)}, {hex(left_delta_prime)} | Y0{lowerStartRound}:{hex(right_delta)}, {hex(right_delta_prime)}"
+        )
+        print("Rotating inputs...")
+        # need to rotate the input(for display as the smt ady added the constraints)
+        (
+            left_beta,
+            left_beta_prime,
+            right_beta,
+            right_beta_prime,
+            left_delta,
+            left_delta_prime,
+            right_delta,
+            right_delta_prime,
+        ) = characRotation(
+            left_beta,
+            left_beta_prime,
+            right_beta,
+            right_beta_prime,
+            left_delta,
+            left_delta_prime,
+            right_delta,
+            right_delta_prime,
+            0,
+        )
+        print(f"Matching the switch in Em(Round {switchRound})...")
         leftSwitchProb = checkAbct.check_abct_prob(
             left_beta, left_beta_prime, left_delta, left_delta_prime
         )
@@ -103,13 +129,14 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             totalSwitchProb = leftSwitchProb * rightSwitchProb
             # totalSwitchWeight = -math.log((totalSwitchProb), 2)
             totalProb = (2 ** (-parameters["sweight"] * 2)) * totalSwitchProb
-            print(totalSwitchProb, totalProb)
-            print(f"{upperRound} rounds uppertrail: \n{parameters['upperVariables']}")
+            # print(totalSwitchProb, totalProb)
+            print(
+                f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
+            )
             print(f"one round boomerang switch at r{switchRound}")
             print(
-                f"{lowerRound-upperRound-1} rounds lowertrail: \n{parameters['lowerVariables']}"
+                f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
             )
-            # print("after-----", parameters["skipround"])
         else:
             print("Either side of the switch is INVALID. Try again")
 
@@ -214,30 +241,34 @@ def rotl(num, pose):
     return (num << pose) | (num >> (16 - pose))
 
 
-def inputRotation(cipher, x0, x1, y0, y1, round=0):
+def characRotation(x0, x1, y0, y1, x2, x3, y2, y3, linear=0):
     """
     Rotate the output of E0 and input of E1 for ciphers
+    E0: x0,x1| y0,y1
+    E1: x2,x3| y2,y3
     """
 
-    if cipher == "sparxroundBoom":
-        x1 = rotl(x1, 2)
-        x1 ^= x0
-        y1 = rotl(y1, 2)
-        y1 ^= y0
+    x0 = rotl(x0, 9)
+    y0 = rotl(y0, 9)
 
-    elif cipher == "chamBoom":
-        if round % 2 == 0:
-            x1 = (x1 << 2) ^ x0
-            y1 = (y1 << 2) ^ y0
-        else:
-            x1 = (x1 << 2) ^ x0
-            y1 = (y1 << 2) ^ y0
+    if linear == 0:
+        x3 ^= x2
+        x3 = rotl(x2, 2)
+        y3 ^= y2
+        y3 = rotl(y3, 2)
     else:
-        print(
-            "Ciphers rotation not exist. Please check again or add new rotation properties."
-        )
+        x3 ^= x2
+        x3 = rotl(x3, 2)
+        y3 ^= y2
+        y3 = rotl(y3, 2)
+
     x0 &= 0xFFFF
     x1 &= 0xFFFF
     y0 &= 0xFFFF
     y1 &= 0xFFFF
-    return (x0, x1, y0, y1)
+    x2 &= 0xFFFF
+    x3 &= 0xFFFF
+    y2 &= 0xFFFF
+    y3 &= 0xFFFF
+
+    return (x0, x1, y0, y1, x2, x3, y2, y3)

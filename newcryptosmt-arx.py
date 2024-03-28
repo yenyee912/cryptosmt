@@ -102,9 +102,9 @@ def loadparameters(args):
         "cipher": "sparxroundBoom",
         "rounds": 5,  # uppertrail+ switchround=1r+ lowertrail
         "skipround": 99,
-        "switchround": 3,  # which #round to switch
-        "uppertrail": 2,  # Number of rounds for E0
-        "lowertrail": 3,  # Number of rounds for E1
+        "switchround": 2,  # which #round to switch
+        "uppertrail": 1,  # Number of rounds for E0
+        "lowertrail": 2,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
         "upperlimit": 0,  # cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
