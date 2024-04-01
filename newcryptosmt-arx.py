@@ -102,9 +102,9 @@ def loadparameters(args):
         "cipher": "sparxroundBoom",
         "rounds": 5,  # uppertrail+ switchround=1r+ lowertrail
         "skipround": 99,
-        "switchround": 2,  # which #round to switch
-        "uppertrail": 1,  # Number of rounds for E0
-        "lowertrail": 2,  # Number of rounds for E1
+        "switchround": 4,  # which #round to switch
+        "uppertrail": 3,  # Number of rounds for E0
+        "lowertrail": 4,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
         "upperlimit": 0,  # cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
@@ -297,14 +297,17 @@ def main():
     parser.add_argument("--latex", nargs=1, help="Print the trail in .tex format.")
 
     # Parse command line arguments and construct parameter list.
-    args = parser.parse_args()
-    params = loadparameters(args)
 
-    # Check if enviroment is setup correctly.
-    checkenviroment()
+    for a in range(3, 12):
+        args = parser.parse_args()
+        params = loadparameters(args)
+        params["lowertrail"] = a
+        checkenviroment()
 
-    # Start the solver
-    startsearch(params)
+        # Check if enviroment is setup correctly.
+
+        # Start the solver
+        startsearch(params)
 
 
 if __name__ == "__main__":

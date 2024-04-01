@@ -57,7 +57,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
             right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
             right_delta_prime = int(characteristic.getData()[lowerStartRound][3], 16)
-        # print(lowerStartRound + parameters["lowertrail"])
+
         lowerEndRound = lowerStartRound + parameters["lowertrail"] - 1
         left_gamma = int(characteristic.getData()[lowerEndRound][0], 16)
         left_gamma_prime = int(characteristic.getData()[lowerEndRound][1], 16)
@@ -75,12 +75,18 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             f"Y1{upperEndRound}": "0x" + format(right_beta_prime, "04x"),
         }
 
-        # # could be x0A, edit later
+        # could be x0A, edit later
+        lowerStartRoundVar0 = "0" + str(lowerStartRound)
+        lowerStartRoundVar1 = "1" + str(lowerStartRound)
+        if (lowerStartRound) % 3 == 0:
+            lowerStartRoundVar0 = "0A" + str(parameters["switchround"])
+            lowerStartRoundVar1 = "1A" + str(parameters["switchround"])
+            # print("ok", lowerStartRoundVar0)
         parameters["lowerVariables"] = {
-            f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
-            f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
-            f"Y0{lowerStartRound}": "0x" + format(right_delta, "04x"),
-            f"Y1{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
+            f"X{lowerStartRoundVar0}": "0x" + format(left_delta, "04x"),
+            f"X{lowerStartRoundVar1}": "0x" + format(left_delta_prime, "04x"),
+            f"Y{lowerStartRoundVar0}": "0x" + format(right_delta, "04x"),
+            f"Y{lowerStartRoundVar1}": "0x" + format(right_delta_prime, "04x"),
             f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
             f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
             f"Y0{lowerEndRound}": "0x" + format(right_gamma, "04x"),
@@ -88,35 +94,38 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         }
 
         print("Obtaining characteristics for trail E0 and E1")
-        print("L     |     R ")
+        keys_list = list(parameters["upperVariables"].keys())
         print(
-            f"Upper trail(E0): X0{upperEndRound}:{hex(left_beta)}, {hex(left_beta_prime)} | Y0{upperEndRound}:{hex(right_beta)}, {hex(right_beta_prime)}"
+            f"Upper trail(E0): {keys_list[4]}:{parameters['upperVariables'][keys_list[4]]},"
+            f"{keys_list[5]}:{parameters['upperVariables'][keys_list[5]]} | "
+            f"{keys_list[6]}:{parameters['upperVariables'][keys_list[6]]}, "
+            f"{keys_list[7]}: {parameters['upperVariables'][keys_list[7]]}"
         )
+        keys_list = list(parameters["lowerVariables"].keys())
         print(
-            f"Lower trail(E1): X0{lowerStartRound}:{hex(left_delta)}, {hex(left_delta_prime)} | Y0{lowerStartRound}:{hex(right_delta)}, {hex(right_delta_prime)}"
+            f"Lower trail(E1): {keys_list[0]}:{parameters['lowerVariables'][keys_list[0]]},"
+            f"{keys_list[1]}: {parameters['lowerVariables'][keys_list[1]]} | "
+            f"{keys_list[2]}:{parameters['lowerVariables'][keys_list[2]]},"
+            f"{keys_list[3]}: {parameters['lowerVariables'][keys_list[3]]}"
         )
         print("Rotating inputs...")
         # need to rotate the input(for display as the smt ady added the constraints)
-        (
-            left_beta,
-            left_beta_prime,
-            right_beta,
-            right_beta_prime,
-            left_delta,
-            left_delta_prime,
-            right_delta,
-            right_delta_prime,
-        ) = characRotation(
-            left_beta,
-            left_beta_prime,
-            right_beta,
-            right_beta_prime,
-            left_delta,
-            left_delta_prime,
-            right_delta,
-            right_delta_prime,
-            0,
-        )
+
+        # rotate the output of E0, same as what we used to do when looking for corresponding beta for alpha
+        left_beta = rotl(left_beta, 9)
+        right_beta = rotl(right_beta, 9)
+
+        # reverse the steps in "beta_generator", because smt produced the trail
+        # to generate beta: X10= ROTL(X10,2) XOR X00
+        # you have to decrypt to get ori beta in abct
+        if switchRound % 3 == 0:
+            # add in the linear layer reverse
+            left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
+            right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
+        else:
+            left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
+            right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
+
         print(f"Matching the switch in Em(Round {switchRound})...")
         leftSwitchProb = checkAbct.check_abct_prob(
             left_beta, left_beta_prime, left_delta, left_delta_prime
@@ -133,7 +142,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             print(
                 f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
             )
-            print(f"one round boomerang switch at r{switchRound}")
+            print(f"One round boomerang switch at R{switchRound}")
             print(
                 f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
             )
@@ -146,7 +155,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         )
 
 
-def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
+def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=30):
     """
     Search top or bottom trail (characteristic) of a boomerang
     modify from search.findMinWeightCharacteristic and boomerang.boomerangTrail
@@ -170,8 +179,8 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
 
     characteristic = ""
 
-    print('parameters["fixedVariables"] : ', parameters["fixedVariables"])
-    print('parameters["boomerangVariables"] : ', parameters["boomerangVariables"])
+    # print('parameters["fixedVariables"] : ', parameters["fixedVariables"])
+    # print('parameters["boomerangVariables"] : ', parameters["boomerangVariables"])
 
     while (
         not search.reachedTimelimit(start_time, parameters["timelimit"])
@@ -218,7 +227,7 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
                     )
                 )
             )
-            print("X0L= (X0A^X1A)<<8 ^X0A")
+            # print("X0L= (X0A^X1A)<<8 ^X0A")
             if parameters["boolector"]:
                 characteristic = parsesolveroutput.getCharBoolectorOutput(
                     result, cipher, parameters["rounds"]
@@ -238,37 +247,6 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
 
 # define ROTL(x, n) ( ((x) << n) | ((x) >> (16 - (n))))
 def rotl(num, pose):
-    return (num << pose) | (num >> (16 - pose))
-
-
-def characRotation(x0, x1, y0, y1, x2, x3, y2, y3, linear=0):
-    """
-    Rotate the output of E0 and input of E1 for ciphers
-    E0: x0,x1| y0,y1
-    E1: x2,x3| y2,y3
-    """
-
-    x0 = rotl(x0, 9)
-    y0 = rotl(y0, 9)
-
-    if linear == 0:
-        x3 ^= x2
-        x3 = rotl(x2, 2)
-        y3 ^= y2
-        y3 = rotl(y3, 2)
-    else:
-        x3 ^= x2
-        x3 = rotl(x3, 2)
-        y3 ^= y2
-        y3 = rotl(y3, 2)
-
-    x0 &= 0xFFFF
-    x1 &= 0xFFFF
-    y0 &= 0xFFFF
-    y1 &= 0xFFFF
-    x2 &= 0xFFFF
-    x3 &= 0xFFFF
-    y2 &= 0xFFFF
-    y3 &= 0xFFFF
-
-    return (x0, x1, y0, y1, x2, x3, y2, y3)
+    x = (num << pose) | (num >> (16 - pose))
+    x &= 0xFFFF
+    return x
