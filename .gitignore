@@ -1,4 +1,4 @@
 __pycache__
 /tmp
-.cnf
+*.cnf
 .DS_Store
