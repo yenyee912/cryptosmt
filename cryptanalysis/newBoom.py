@@ -78,15 +78,11 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         # could be x0A, edit later
         lowerStartRoundVar0 = "0" + str(lowerStartRound)
         lowerStartRoundVar1 = "1" + str(lowerStartRound)
-        if (lowerStartRound) % 3 == 0:
-            lowerStartRoundVar0 = "0A" + str(parameters["switchround"])
-            lowerStartRoundVar1 = "1A" + str(parameters["switchround"])
-            # print("ok", lowerStartRoundVar0)
         parameters["lowerVariables"] = {
-            f"X{lowerStartRoundVar0}": "0x" + format(left_delta, "04x"),
-            f"X{lowerStartRoundVar1}": "0x" + format(left_delta_prime, "04x"),
-            f"Y{lowerStartRoundVar0}": "0x" + format(right_delta, "04x"),
-            f"Y{lowerStartRoundVar1}": "0x" + format(right_delta_prime, "04x"),
+            f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
+            f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
+            f"Y0{lowerStartRound}": "0x" + format(right_delta, "04x"),
+            f"Y1{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
             f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
             f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
             f"Y0{lowerEndRound}": "0x" + format(right_gamma, "04x"),
@@ -118,13 +114,21 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         # reverse the steps in "beta_generator", because smt produced the trail
         # to generate beta: X10= ROTL(X10,2) XOR X00
         # you have to decrypt to get ori beta in abct
-        if switchRound % 3 == 0:
-            # add in the linear layer reverse
-            left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
-            right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
-        else:
-            left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
-            right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
+        if lowerStartRound % 3 == 0:
+            temp = rotl((right_delta ^ right_delta_prime), 8)
+            tmpVar = left_delta
+            left_delta = right_delta
+            right_delta = tmpVar
+
+            tmpVar = left_delta_prime
+            left_delta_prime = right_delta_prime
+            right_delta_prime = tmpVar
+
+            right_delta_prime = right_delta_prime ^ temp ^ left_delta_prime
+            right_delta = right_delta ^ temp ^ left_delta
+
+        left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
+        right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
 
         print(f"Matching the switch in Em(Round {switchRound})...")
         leftSwitchProb = checkAbct.check_abct_prob(
@@ -155,7 +159,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         )
 
 
-def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=30):
+def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
     """
     Search top or bottom trail (characteristic) of a boomerang
     modify from search.findMinWeightCharacteristic and boomerang.boomerangTrail

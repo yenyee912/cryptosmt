@@ -181,24 +181,41 @@ class SPARXRoundCipher(AbstractCipher):
 
             upperEndRound = parameters["uppertrail"]  # round of E0 outputDiff
             lowerStartRound = parameters["switchround"] + 1
+            switchRound = parameters["switchround"]
             # lowerEndRound= lowerStartRound+parameters["lowertrail"]-1
 
-            lowerStartRoundVar0 = "0" + str(lowerStartRound)
-            lowerStartRoundVar1 = "1" + str(lowerStartRound)
-            # Tricky: switch at r2, r2 waive, need fix x0a2(r3) input and r1 output
-            # Tricky: switch at r3, need fix the input of r4, which have to consider L layer
-            # round number in variable with A need plus 1 round,
-            # x0a5= output of x06 before Llayer, x06= output after linear layer
             if (lowerStartRound) % self.rounds_per_step == 0:
-                lowerStartRoundVar0 = "0A" + str(parameters["switchround"])
-                lowerStartRoundVar1 = "1A" + str(parameters["switchround"])
-                # print("ok", lowerStartRoundVar0)
+                """
+                when switch round=2,
+                - need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
+                - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
+
+                """
+                stp_file.write(
+                    f"ASSERT((X0A{switchRound} & 0b0000000000000001) =  (X1A{switchRound} & 0b0000000000000100));\n"
+                )
+                stp_file.write(
+                    f"ASSERT((Y0A{switchRound} & 0b0000000000000001) =  (Y1A{switchRound} & 0b0000000000000100));\n"
+                )
+                stp_file.write(
+                    f"ASSERT((X0{lowerStartRound} & 0b0000000000000001) =  (X1{lowerStartRound} & 0b0000000000000001));\n"
+                )
+                stp_file.write(
+                    f"ASSERT((Y0{lowerStartRound} & 0b0000000000000001) =  (Y1{lowerStartRound} & 0b0000000000000001));\n"
+                )
+
+            else:
+                stp_file.write(
+                    f"ASSERT((X0{lowerStartRound} & 0b0000000000000001) =  (X1{lowerStartRound} & 0b0000000000000100));\n"
+                )
+                stp_file.write(
+                    f"ASSERT((Y0{lowerStartRound} & 0b0000000000000001) =  (Y1{lowerStartRound} & 0b0000000000000100));\n"
+                )
 
             stp_file.write(
                 f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                # f"ASSERT((X{upperEndRoundVar1} & 0b1100000000000011) = 0b0100000000000000);\n"
                 f"ASSERT((X1{upperEndRound} & 0b0000000000001111) = 0b0000000000000001);\n"
             )
             stp_file.write(
@@ -210,18 +227,26 @@ class SPARXRoundCipher(AbstractCipher):
             # beta_prime_x= X0 xor X1;
             # beta_prime_x= ROTL(beta_prime_x, 14);
 
-            stp_file.write(
-                f"ASSERT((X{lowerStartRoundVar0} & 0b0000000000000001) =  (X{lowerStartRoundVar1} & 0b0000000000000100));\n"
-            )
-            stp_file.write(
-                f"ASSERT((Y{lowerStartRoundVar0} & 0b0000000000000001) =  (Y{lowerStartRoundVar1} & 0b0000000000000100));\n"
-            )
+            # if switchRound % 3 == 0:
+            #     stp_file.write(
+            #         f"ASSERT((X{lowerStartRoundVar0} & 0b0000000000000001) =  (X{lowerStartRoundVar1} & 0b0000000000000001));\n"
+            #     )
+            #     stp_file.write(
+            #         f"ASSERT((Y{lowerStartRoundVar0} & 0b0000000000000001) =  (Y{lowerStartRoundVar1} & 0b0000000000000001));\n"
+            #     )
+            # else:
+            #     stp_file.write(
+            #         f"ASSERT((X{lowerStartRoundVar0} & 0b0000000000000001) =  (X{lowerStartRoundVar1} & 0b0000000000000100));\n"
+            #     )
+            #     stp_file.write(
+            #         f"ASSERT((Y{lowerStartRoundVar0} & 0b0000000000000001) =  (Y{lowerStartRoundVar1} & 0b0000000000000100));\n"
+            #     )
 
             stp_file.write(
                 f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                f"ASSERT(NOT(X{lowerStartRoundVar0}|X{lowerStartRoundVar1}|Y{lowerStartRoundVar0}|Y{lowerStartRoundVar1}) = 0b0000000000000000);\n"
+                f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
             )
 
             stpcommands.setupQuery(stp_file)
