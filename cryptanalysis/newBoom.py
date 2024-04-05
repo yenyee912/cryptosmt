@@ -76,8 +76,6 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         }
 
         # could be x0A, edit later
-        lowerStartRoundVar0 = "0" + str(lowerStartRound)
-        lowerStartRoundVar1 = "1" + str(lowerStartRound)
         parameters["lowerVariables"] = {
             f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
             f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
@@ -155,24 +153,20 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
 
     except:
         print(
-            "No characteristic found for the given limits. Please check the variables and weights setting.\n"
+            f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"
         )
 
 
-def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
+def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=36):
     """
     Search top or bottom trail (characteristic) of a boomerang
     modify from search.findMinWeightCharacteristic and boomerang.boomerangTrail
     """
     # Set parameters for targeted boomerang face
 
+    print(f"Starting search for boomerang characteristic with minimal weight for")
     print(
-        (
-            "Starting search for boomerang characteristic with minimal weight for\n"
-            "{} - Rounds: {} Wordsize: {}".format(
-                cipher.name, parameters["rounds"], parameters["wordsize"]
-            )
-        )
+        f"{cipher.name} - Rounds: {parameters['rounds']} Switch: {parameters['switchround']} Wordsize: {parameters['wordsize']}"
     )
 
     print("MAX weight= {} of the boomerang trail".format(searchLimit))
@@ -254,3 +248,66 @@ def rotl(num, pose):
     x = (num << pose) | (num >> (16 - pose))
     x &= 0xFFFF
     return x
+
+
+# clustering
+def computeProbabilityOfDifferentials(cipher, parameters):
+    """
+    Computes the probability of the differential by iteratively
+    summing up all characteristics of a specific weight using
+    a SAT solver.
+    """
+    rnd_string_tmp = "%030x" % random.randrange(16**30)
+    diff_prob = 0
+    characteristics_found = 0
+    sat_logfile = "tmp/satlog{}.tmp".format(rnd_string_tmp)
+
+    start_time = time.time()
+
+    while (
+        not search.reachedTimelimit(start_time, parameters["timelimit"])
+        and parameters["sweight"] < MAX_WEIGHT
+    ):
+
+        if os.path.isfile(sat_logfile):
+            os.remove(sat_logfile)
+
+        stp_file = "tmp/{}{}.stp".format(cipher.name, rnd_string_tmp)
+        cipher.createSTP(stp_file, parameters)
+
+        # Start solver
+        sat_process = search.startSATsolver(stp_file)
+        log_file = open(sat_logfile, "w")
+
+        # Find the number of solutions with the SAT solver
+        print("Finding all trails of weight {}".format(parameters["sweight"]))
+
+        # Watch the process and count solutions
+        solutions = 0
+        while sat_process.poll() is None:
+            line = sat_process.stdout.readline().decode("utf-8")
+            log_file.write(line)
+            if "s SATISFIABLE" in line:
+                solutions += 1
+            if solutions % 100 == 0:
+                print("\tSolutions: {}\r".format(solutions // 2), end="")
+
+        log_file.close()
+        print("\tSolutions: {}".format(solutions // 2))
+
+        assert solutions == countSolutionsLogfile(sat_logfile)
+
+        # The encoded CNF contains every solution twice
+        solutions //= 2
+
+        # Print result
+        diff_prob += math.pow(2, -parameters["sweight"]) * solutions
+        characteristics_found += solutions
+        if diff_prob > 0.0:
+            # print("\tSolutions: {}".format(solutions))
+            print("\tTrails found: {}".format(characteristics_found))
+            print("\tCurrent Probability: " + str(math.log(diff_prob, 2)))
+            print("\tTime: {}s".format(round(time.time() - start_time, 2)))
+        parameters["sweight"] += 1
+
+    return diff_prob

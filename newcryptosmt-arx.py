@@ -102,8 +102,8 @@ def loadparameters(args):
         "cipher": "sparxroundBoom",
         "rounds": 5,  # uppertrail+ switchround=1r+ lowertrail
         "skipround": 99,
-        "switchround": 3,  # which #round to switch
-        "uppertrail": 4,  # Number of rounds for E0
+        "switchround": 4,  # which #round to switch
+        "uppertrail": 3,  # Number of rounds for E0
         "lowertrail": 4,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
@@ -298,10 +298,12 @@ def main():
 
     # Parse command line arguments and construct parameter list.
 
-    for a in range(6, 12):
+    for a in range(2, 12):
         args = parser.parse_args()
         params = loadparameters(args)
-        params["lowertrail"] = a
+        params["uppertrail"] = a
+        params["lowertrail"] = 12 - a - 1
+        params["switchround"] = a + 1
         checkenviroment()
 
         # Check if enviroment is setup correctly.
