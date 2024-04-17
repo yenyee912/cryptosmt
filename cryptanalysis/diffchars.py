@@ -56,6 +56,7 @@ class DifferentialCharacteristic(object):
                             or self.cipher.name == "speck"
                             or self.cipher.name == "sparxround1r"
                             or self.cipher.name == "sparxround"
+                            or self.cipher.name == "sparxroundBoom"
                         ):
 
                             tmp_row.append(
@@ -191,3 +192,17 @@ class DifferentialCharacteristic(object):
         data = self.getData()
 
         return data[0][0]
+
+    def getStatus(self):
+        data = self.getData()
+
+        if not data:
+            return False
+        else:
+            return True
+
+    def getWeightPerSparxRound(self):
+
+        data = self.getData()
+
+        print(data)

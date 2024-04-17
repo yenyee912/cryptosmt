@@ -92,21 +92,6 @@ def assertABCTVariables(stpfile, upper, lower):
     return
 
 
-def assertBoomerangVariableValue(stpfile, a, b):
-    """
-    Adds an assert that 4bits LSB of a = b to the stp stpfile, to suit the 0,1,o,o / 0,1,e,ea
-    0bin1111111111110000= 4bits LSB
-    """
-    binaryString = format(int(b, 16), "04b")
-
-    stpfile.write(
-        "ASSERT(({} & 0b0000000000001111) = 0b000000000000{});\n".format(
-            a, binaryString
-        )
-    )
-    return
-
-
 def assertVariableValue(stpfile, a, b):
     """
     Adds an assert that a = b to the stp stpfile.

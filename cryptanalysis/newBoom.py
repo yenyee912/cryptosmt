@@ -25,7 +25,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
     switchRound = parameters["switchround"]
 
     # print("beforeeee-----", parameters["skipround"])
-    parameters["rounds"] = parameters["uppertrail"] + parameters["lowertrail"] + 1
+    parameters["rounds"] = parameters["switchround"] + parameters["lowertrail"]
     characteristic = searchDifferentialTrail(
         cipher,
         parameters,
@@ -35,135 +35,164 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
     # get a,b,d,g from char, feed to abct, see if match
     # use try, might not have trail generated
     try:
-        upperEndRound = parameters["uppertrail"]
-        left_alpha = int(characteristic.getData()[0][0], 16)
-        left_alpha_prime = int(characteristic.getData()[0][1], 16)
-        right_alpha = int(characteristic.getData()[0][2], 16)
-        right_alpha_prime = int(characteristic.getData()[0][3], 16)
+        if characteristic.getStatus():
+            upperEndRound = switchRound - 1
+            left_alpha = int(characteristic.getData()[0][0], 16)
+            left_alpha_prime = int(characteristic.getData()[0][1], 16)
+            right_alpha = int(characteristic.getData()[0][2], 16)
+            right_alpha_prime = int(characteristic.getData()[0][3], 16)
 
-        left_beta = int(characteristic.getData()[upperEndRound][0], 16)
-        left_beta_prime = int(characteristic.getData()[upperEndRound][1], 16)
-        right_beta = int(characteristic.getData()[upperEndRound][2], 16)
-        right_beta_prime = int(characteristic.getData()[upperEndRound][3], 16)
+            left_beta = int(characteristic.getData()[upperEndRound][0], 16)
+            left_beta_prime = int(characteristic.getData()[upperEndRound][1], 16)
+            right_beta = int(characteristic.getData()[upperEndRound][2], 16)
+            right_beta_prime = int(characteristic.getData()[upperEndRound][3], 16)
 
-        lowerStartRound = switchRound + 1
-        if lowerStartRound % 3 == 0:  # take the output from A2
-            left_delta = int(characteristic.getData()[switchRound][4], 16)
-            left_delta_prime = int(characteristic.getData()[switchRound][5], 16)
-            right_delta = int(characteristic.getData()[switchRound][6], 16)
-            right_delta_prime = int(characteristic.getData()[switchRound][7], 16)
-        else:
-            left_delta = int(characteristic.getData()[lowerStartRound][0], 16)
-            left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
-            right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
-            right_delta_prime = int(characteristic.getData()[lowerStartRound][3], 16)
+            lowerStartRound = switchRound + 1
+            if lowerStartRound % 3 == 0:  # take the output from A2
+                left_delta = int(characteristic.getData()[switchRound][4], 16)
+                left_delta_prime = int(characteristic.getData()[switchRound][5], 16)
+                right_delta = int(characteristic.getData()[switchRound][6], 16)
+                right_delta_prime = int(characteristic.getData()[switchRound][7], 16)
+            else:
+                left_delta = int(characteristic.getData()[lowerStartRound][0], 16)
+                left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
+                right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
+                right_delta_prime = int(
+                    characteristic.getData()[lowerStartRound][3], 16
+                )
 
-        lowerEndRound = lowerStartRound + parameters["lowertrail"] - 1
-        left_gamma = int(characteristic.getData()[lowerEndRound][0], 16)
-        left_gamma_prime = int(characteristic.getData()[lowerEndRound][1], 16)
-        right_gamma = int(characteristic.getData()[lowerEndRound][2], 16)
-        right_gamma_prime = int(characteristic.getData()[lowerEndRound][3], 16)
+            lowerEndRound = switchRound + parameters["lowertrail"]
+            left_gamma = int(characteristic.getData()[lowerEndRound][0], 16)
+            left_gamma_prime = int(characteristic.getData()[lowerEndRound][1], 16)
+            right_gamma = int(characteristic.getData()[lowerEndRound][2], 16)
+            right_gamma_prime = int(characteristic.getData()[lowerEndRound][3], 16)
 
-        parameters["upperVariables"] = {
-            "X00": "0x" + format(left_alpha, "04x"),
-            "X10": "0x" + format(left_alpha_prime, "04x"),
-            "Y00": "0x" + format(right_alpha, "04x"),
-            "Y10": "0x" + format(right_alpha_prime, "04x"),
-            f"X0{upperEndRound}": "0x" + format(left_beta, "04x"),
-            f"X1{upperEndRound}": "0x" + format(left_beta_prime, "04x"),
-            f"Y0{upperEndRound}": "0x" + format(right_beta, "04x"),
-            f"Y1{upperEndRound}": "0x" + format(right_beta_prime, "04x"),
-        }
+            parameters["upperVariables"] = {
+                "X00": "0x" + format(left_alpha, "04x"),
+                "X10": "0x" + format(left_alpha_prime, "04x"),
+                "Y00": "0x" + format(right_alpha, "04x"),
+                "Y10": "0x" + format(right_alpha_prime, "04x"),
+                f"X0{upperEndRound}": "0x" + format(left_beta, "04x"),
+                f"X1{upperEndRound}": "0x" + format(left_beta_prime, "04x"),
+                f"Y0{upperEndRound}": "0x" + format(right_beta, "04x"),
+                f"Y1{upperEndRound}": "0x" + format(right_beta_prime, "04x"),
+            }
 
-        # could be x0A, edit later
-        parameters["lowerVariables"] = {
-            f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
-            f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
-            f"Y0{lowerStartRound}": "0x" + format(right_delta, "04x"),
-            f"Y1{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
-            f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
-            f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
-            f"Y0{lowerEndRound}": "0x" + format(right_gamma, "04x"),
-            f"Y1{lowerEndRound}": "0x" + format(right_gamma_prime, "04x"),
-        }
+            # could be x0A, edit later
+            parameters["lowerVariables"] = {
+                f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
+                f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
+                f"Y0{lowerStartRound}": "0x" + format(right_delta, "04x"),
+                f"Y1{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
+                f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
+                f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
+                f"Y0{lowerEndRound}": "0x" + format(right_gamma, "04x"),
+                f"Y1{lowerEndRound}": "0x" + format(right_gamma_prime, "04x"),
+            }
 
-        print("Obtaining characteristics for trail E0 and E1")
-        keys_list = list(parameters["upperVariables"].keys())
-        print(
-            f"Upper trail(E0): {keys_list[4]}:{parameters['upperVariables'][keys_list[4]]},"
-            f"{keys_list[5]}:{parameters['upperVariables'][keys_list[5]]} | "
-            f"{keys_list[6]}:{parameters['upperVariables'][keys_list[6]]}, "
-            f"{keys_list[7]}: {parameters['upperVariables'][keys_list[7]]}"
-        )
-        keys_list = list(parameters["lowerVariables"].keys())
-        print(
-            f"Lower trail(E1): {keys_list[0]}:{parameters['lowerVariables'][keys_list[0]]},"
-            f"{keys_list[1]}: {parameters['lowerVariables'][keys_list[1]]} | "
-            f"{keys_list[2]}:{parameters['lowerVariables'][keys_list[2]]},"
-            f"{keys_list[3]}: {parameters['lowerVariables'][keys_list[3]]}"
-        )
-        print("Rotating inputs...")
-        # need to rotate the input(for display as the smt ady added the constraints)
-
-        # rotate the output of E0, same as what we used to do when looking for corresponding beta for alpha
-        left_beta = rotl(left_beta, 9)
-        right_beta = rotl(right_beta, 9)
-
-        # reverse the steps in "beta_generator", because smt produced the trail
-        # to generate beta: X10= ROTL(X10,2) XOR X00
-        # you have to decrypt to get ori beta in abct
-        if lowerStartRound % 3 == 0:
-            temp = rotl((right_delta ^ right_delta_prime), 8)
-            tmpVar = left_delta
-            left_delta = right_delta
-            right_delta = tmpVar
-
-            tmpVar = left_delta_prime
-            left_delta_prime = right_delta_prime
-            right_delta_prime = tmpVar
-
-            right_delta_prime = right_delta_prime ^ temp ^ left_delta_prime
-            right_delta = right_delta ^ temp ^ left_delta
-
-        left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
-        right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
-
-        print(f"Matching the switch in Em(Round {switchRound})...")
-        leftSwitchProb = checkAbct.check_abct_prob(
-            left_beta, left_beta_prime, left_delta, left_delta_prime
-        )
-        rightSwitchProb = checkAbct.check_abct_prob(
-            right_beta, right_beta_prime, right_delta, right_delta_prime
-        )
-        totalSwitchProb = 0
-        if leftSwitchProb != 0 and rightSwitchProb != 0:
-            totalSwitchProb = leftSwitchProb * rightSwitchProb
-            # totalSwitchWeight = -math.log((totalSwitchProb), 2)
-            totalProb = (2 ** (-parameters["sweight"] * 2)) * totalSwitchProb
-            # print(totalSwitchProb, totalProb)
+            print("Obtaining characteristics for trail E0 and E1")
+            keyList = list(parameters["upperVariables"].keys())
             print(
-                f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
+                f"Upper trail(E0): {keyList[4]}:{parameters['upperVariables'][keyList[4]]},"
+                f"{keyList[5]}:{parameters['upperVariables'][keyList[5]]} | "
+                f"{keyList[6]}:{parameters['upperVariables'][keyList[6]]}, "
+                f"{keyList[7]}: {parameters['upperVariables'][keyList[7]]}"
             )
-            print(f"One round boomerang switch at R{switchRound}")
+            keyList2 = list(parameters["lowerVariables"].keys())
             print(
-                f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
+                f"Lower trail(E1): {keyList2[0]}:{parameters['lowerVariables'][keyList2[0]]},"
+                f"{keyList2[1]}: {parameters['lowerVariables'][keyList2[1]]} | "
+                f"{keyList2[2]}:{parameters['lowerVariables'][keyList2[2]]},"
+                f"{keyList2[3]}: {parameters['lowerVariables'][keyList2[3]]}"
             )
+            print("Rotating inputs...")
+            # need to rotate the input(for display as the smt ady added the constraints)
+
+            # rotate the output of E0, same as what we used to do when looking for corresponding beta for alpha
+            left_beta = rotl(left_beta, 9)
+            right_beta = rotl(right_beta, 9)
+
+            # reverse the steps in "beta_generator", because smt produced the trail
+            # to generate beta: X10= ROTL(X10,2) XOR X00
+            # you have to decrypt to get ori beta in abct
+            if lowerStartRound % 3 == 0:
+                temp = rotl((right_delta ^ right_delta_prime), 8)
+                tmpVar = left_delta
+                left_delta = right_delta
+                right_delta = tmpVar
+
+                tmpVar = left_delta_prime
+                left_delta_prime = right_delta_prime
+                right_delta_prime = tmpVar
+
+                right_delta_prime = right_delta_prime ^ temp ^ left_delta_prime
+                right_delta = right_delta ^ temp ^ left_delta
+
+            left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
+            right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
+
+            print(f"Matching the switch in Em(Round {switchRound})...")
+            # leftSwitchProb = 1.0
+            leftSwitchProb = checkAbct.check_abct_prob(
+                left_beta, left_beta_prime, left_delta, left_delta_prime
+            )
+            # rightSwitchProb = 0.5
+            rightSwitchProb = checkAbct.check_abct_prob(
+                right_beta, right_beta_prime, right_delta, right_delta_prime
+            )
+            totalSwitchProb = 0
+            if leftSwitchProb != 0 and rightSwitchProb != 0:
+                totalSwitchProb = leftSwitchProb * rightSwitchProb
+                # totalSwitchWeight = -math.log((totalSwitchProb), 2)
+                totalProb = (2 ** (-parameters["sweight"] * 2)) * totalSwitchProb
+                # print(totalSwitchProb, totalProb)
+                print(
+                    f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
+                )
+                print(f"One round boomerang switch at R{switchRound}")
+                print(
+                    f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
+                )
+                # do clustering for E0 then E1? or we can fix the xE0 and xE1 just search for whole trail?
+                parameters["fixedVariables"] = {}
+                for key in keyList[4:8]:  # Assuming keyList contains at least 4 keys
+                    parameters["fixedVariables"][key] = parameters["upperVariables"][
+                        key
+                    ]
+                parameters["sweight"] = 0
+                parameters["switchround"] = 0  # not trigger the extra constraints issue
+                parameters["rounds"] = parameters["uppertrail"]
+                startTime = time.time()
+                # print(parameters)
+
+                e0Prob = searchDifferentialTrail(
+                    cipher, parameters, startTime, searchLimit=upperweight, mode=4
+                )
+                print(e0Prob)
+                # parameters["fixedVariables"] = {
+                #     keyList2[0]: parameters["lowerVariables"][keyList2[0]],
+                #     keyList2[1]: parameters["lowerVariables"][keyList2[1]],
+                #     keyList2[2]: parameters["lowerVariables"][keyList2[2]],
+                #     keyList2[3]: parameters["lowerVariables"][keyList2[3]],
+                # }
+                # e0ProbChar
+            else:
+                print("Either side of the switch is INVALID. Try again")
+        # if getStatus==false
         else:
-            print("Either side of the switch is INVALID. Try again")
+            print(
+                f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"
+            )
+    except Exception as e:
+        print("Error occured here...", e)
 
-    except:
-        print(
-            f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"
-        )
 
-
-def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=36):
+def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=34, mode=0):
     """
     Search top or bottom trail (characteristic) of a boomerang
     modify from search.findMinWeightCharacteristic and boomerang.boomerangTrail
     """
-    # Set parameters for targeted boomerang face
-
+    print(cipher.name)
     print(f"Starting search for boomerang characteristic with minimal weight for")
     print(
         f"{cipher.name} - Rounds: {parameters['rounds']} Switch: {parameters['switchround']} Wordsize: {parameters['wordsize']}"
@@ -177,7 +206,7 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=36):
 
     characteristic = ""
 
-    # print('parameters["fixedVariables"] : ', parameters["fixedVariables"])
+    print('parameters["fixedVariables"] : ', parameters["fixedVariables"])
     # print('parameters["boomerangVariables"] : ', parameters["boomerangVariables"])
 
     while (
@@ -197,9 +226,6 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=36):
             parameters["rounds"],
             timestamp,
         )
-
-        # Fix number of rounds
-        # parameters["rounds"] = parameters[trail]
 
         cipher.createSTP(stp_file, parameters)
         result = ""
@@ -225,7 +251,6 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=36):
                     )
                 )
             )
-            # print("X0L= (X0A^X1A)<<8 ^X0A")
             if parameters["boolector"]:
                 characteristic = parsesolveroutput.getCharBoolectorOutput(
                     result, cipher, parameters["rounds"]
@@ -238,9 +263,11 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=36):
             print("----")
             break
         parameters["sweight"] += 1
-        # print("----")
-    # parameters["skipround"] = 55
-    return characteristic
+
+    if mode == 4:
+        return parameters["sweight"]
+    else:
+        return characteristic
 
 
 # define ROTL(x, n) ( ((x) << n) | ((x) >> (16 - (n))))
@@ -248,66 +275,3 @@ def rotl(num, pose):
     x = (num << pose) | (num >> (16 - pose))
     x &= 0xFFFF
     return x
-
-
-# clustering
-def computeProbabilityOfDifferentials(cipher, parameters):
-    """
-    Computes the probability of the differential by iteratively
-    summing up all characteristics of a specific weight using
-    a SAT solver.
-    """
-    rnd_string_tmp = "%030x" % random.randrange(16**30)
-    diff_prob = 0
-    characteristics_found = 0
-    sat_logfile = "tmp/satlog{}.tmp".format(rnd_string_tmp)
-
-    start_time = time.time()
-
-    while (
-        not search.reachedTimelimit(start_time, parameters["timelimit"])
-        and parameters["sweight"] < MAX_WEIGHT
-    ):
-
-        if os.path.isfile(sat_logfile):
-            os.remove(sat_logfile)
-
-        stp_file = "tmp/{}{}.stp".format(cipher.name, rnd_string_tmp)
-        cipher.createSTP(stp_file, parameters)
-
-        # Start solver
-        sat_process = search.startSATsolver(stp_file)
-        log_file = open(sat_logfile, "w")
-
-        # Find the number of solutions with the SAT solver
-        print("Finding all trails of weight {}".format(parameters["sweight"]))
-
-        # Watch the process and count solutions
-        solutions = 0
-        while sat_process.poll() is None:
-            line = sat_process.stdout.readline().decode("utf-8")
-            log_file.write(line)
-            if "s SATISFIABLE" in line:
-                solutions += 1
-            if solutions % 100 == 0:
-                print("\tSolutions: {}\r".format(solutions // 2), end="")
-
-        log_file.close()
-        print("\tSolutions: {}".format(solutions // 2))
-
-        assert solutions == countSolutionsLogfile(sat_logfile)
-
-        # The encoded CNF contains every solution twice
-        solutions //= 2
-
-        # Print result
-        diff_prob += math.pow(2, -parameters["sweight"]) * solutions
-        characteristics_found += solutions
-        if diff_prob > 0.0:
-            # print("\tSolutions: {}".format(solutions))
-            print("\tTrails found: {}".format(characteristics_found))
-            print("\tCurrent Probability: " + str(math.log(diff_prob, 2)))
-            print("\tTime: {}s".format(round(time.time() - start_time, 2)))
-        parameters["sweight"] += 1
-
-    return diff_prob

@@ -9,7 +9,7 @@ Note:
 To support WARP, the modified stpcommands must be included because the state words for WARP/TWINE is missing
 """
 
-from cryptanalysis import newarxBoomerang, search, boomerang, newBoom
+from cryptanalysis import search, boomerang, newBoom
 from ciphers import simon, speck, simonlinear, warp, sparxroundBoom
 from ciphers import sparx, sparxround, cham
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
@@ -59,8 +59,6 @@ def startsearch(tool_parameters):
         search.computeProbabilityOfDifferentials(cipher, tool_parameters)
     elif tool_parameters["mode"] == 5:
         boomerang.computeFeistelBoomerangDifferential(cipher, tool_parameters)
-    elif tool_parameters["mode"] == 6:
-        newarxBoomerang.findARXBoomerangDifferential(cipher, tool_parameters)
     elif tool_parameters["mode"] == 7:
         newBoom.findARXBoomerangDifferentialByMatchSwitch(cipher, tool_parameters)
     return
@@ -103,8 +101,8 @@ def loadparameters(args):
         "rounds": 5,  # uppertrail+ switchround=1r+ lowertrail
         "skipround": 99,
         "switchround": 4,  # which #round to switch
-        "uppertrail": 3,  # Number of rounds for E0
-        "lowertrail": 4,  # Number of rounds for E1
+        "uppertrail": 4,  # Number of rounds for E0
+        "lowertrail": 2,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
         "upperlimit": 0,  # cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
@@ -297,19 +295,22 @@ def main():
     parser.add_argument("--latex", nargs=1, help="Print the trail in .tex format.")
 
     # Parse command line arguments and construct parameter list.
+    args = parser.parse_args()
+    params = loadparameters(args)
+    checkenviroment()
+    startsearch(params)
 
-    for a in range(2, 12):
-        args = parser.parse_args()
-        params = loadparameters(args)
-        params["uppertrail"] = a
-        params["lowertrail"] = 12 - a - 1
-        params["switchround"] = a + 1
-        checkenviroment()
 
-        # Check if enviroment is setup correctly.
-
-        # Start the solver
-        startsearch(params)
+# for a in range(5, 12):
+#     args = parser.parse_args()
+#     params = loadparameters(args)
+#     params["uppertrail"] = a
+#     params["lowertrail"] = 12 - a - 1
+#     params["switchround"] = a + 1
+#     # Check if enviroment is setup correctly.
+#     checkenviroment()
+#     # Start the solver
+#     startsearch(params)
 
 
 if __name__ == "__main__":
