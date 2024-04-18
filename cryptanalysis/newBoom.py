@@ -241,10 +241,11 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=34, mode=
             print("---")
             print(
                 (
-                    "Boomerang(complete) trail for {} - Rounds {} - Wordsize {} - "
+                    "Boomerang(complete) trail for {} - Rounds {} -Switch {} - Wordsize {} - "
                     "Weight {} - Time {}s".format(
                         cipher.name,
                         parameters["rounds"],
+                        parameters["switchround"],
                         parameters["wordsize"],
                         parameters["sweight"],
                         current_time,

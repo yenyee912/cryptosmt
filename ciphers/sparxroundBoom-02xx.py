@@ -195,7 +195,7 @@ class SPARXRoundCipher(AbstractCipher):
                 when switch round=2,
                 - need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
                 - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
-
+                - 0,2==> check 3rd bits of c is === to 3rd bits of d
                 """
             stp_file.write(
                 f"ASSERT((X0A{switchRound} & 0b0000000000000100) =  (X1A{switchRound} & 0b0000000000010000));\n"

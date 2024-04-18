@@ -3,7 +3,7 @@ Created on Mar 29, 2017
 
 @author: ralph
 
-this is model for switch of 8,0
+this is model for switch of 2,2
 """
 
 from parser import stpcommands
