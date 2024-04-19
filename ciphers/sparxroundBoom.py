@@ -205,17 +205,17 @@ class SPARXRoundCipher(AbstractCipher):
             stp_file.write(
                 f"ASSERT(NOT(BVXOR((X0A{switchRound}&0b0000000000000011), (X1A{switchRound}&0b0000000000000100)) = 0b0000000000000010));\n"
             )
-            # stp_file.write(
-            #     f"ASSERT(NOT((Y0A{switchRound} & 0b0000000000000011= 0b0000000000000010) & (Y1A{switchRound}&0b0000000000111100 = 0b0000000000000000)));\n"
-            # )
+            stp_file.write(
+                f"ASSERT(NOT(BVXOR((Y0A{switchRound}&0b0000000000000011), (Y1A{switchRound}&0b0000000000000100)) = 0b0000000000000010));\n"
+            )
 
         else:
             stp_file.write(
                 f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000000000000011), (X1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
             )
-            # stp_file.write(
-            #     f"ASSERT(~(BVXOR (Y0{lowerStartRound} & 0b0000000000000011),(Y1{lowerStartRound}&0b0000000000111100) = 0b0000000000000010));\n"
-            # )
+            stp_file.write(
+                f"ASSERT(NOT(BVXOR((Y0{lowerStartRound}&0b0000000000000011), (Y1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
+            )
 
         stp_file.write(
             # f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000010000000000);\n"

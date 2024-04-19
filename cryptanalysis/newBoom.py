@@ -187,7 +187,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         print("Error occured here...", e)
 
 
-def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=34, mode=0):
+def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32, mode=0):
     """
     Search top or bottom trail (characteristic) of a boomerang
     modify from search.findMinWeightCharacteristic and boomerang.boomerangTrail
