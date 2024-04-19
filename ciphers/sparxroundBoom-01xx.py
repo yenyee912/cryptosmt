@@ -179,63 +179,17 @@ class SPARXRoundCipher(AbstractCipher):
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 
             if (parameters["switchround"]>0):
-              upperEndRound = parameters["uppertrail"]  # round of E0 outputDiff
-              lowerStartRound = parameters["switchround"] + 1
-              switchRound = parameters["switchround"]
+                switchRound = parameters["switchround"]
+                upperEndRound = switchRound-1  # round of E0 outputDiff
+                lowerStartRound = switchRound + 1
 
-              self.setupSPARXBoomSwitchConstraints(stp_file, self, upperEndRound, switchRound, lowerStartRound)
+                self.setupSwitchConstraints(
+                    stp_file, self, upperEndRound, switchRound, lowerStartRound
+                )
 
             stpcommands.setupQuery(stp_file)
 
         return
-
-    def setupSPARXBoomSwitchConstraints(stp_file, self, upperEndRound, switchRound, lowerStartRound):
-        if (lowerStartRound) % self.rounds_per_step == 0:
-                """
-                when switch round=2,
-                - need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
-                - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
-
-                """
-                stp_file.write(
-                    f"ASSERT((X0A{switchRound} & 0b0000000000000001) =  (X1A{switchRound} & 0b0000000000000100));\n"
-                )
-                stp_file.write(
-                    f"ASSERT((Y0A{switchRound} & 0b0000000000000001) =  (Y1A{switchRound} & 0b0000000000000100));\n"
-                )
-                # stp_file.write(
-                #     f"ASSERT((X0{lowerStartRound} & 0b0000000000000001) =  (X1{lowerStartRound} & 0b0000000000000001));\n"
-                # )
-                # stp_file.write(
-                #     f"ASSERT((Y0{lowerStartRound} & 0b0000000000000001) =  (Y1{lowerStartRound} & 0b0000000000000001));\n"
-                # )
-
-        else:
-                stp_file.write(
-                    f"ASSERT((X0{lowerStartRound} & 0b0000000000000001) =  (X1{lowerStartRound} & 0b0000000000000100));\n"
-                )
-                stp_file.write(
-                    f"ASSERT((Y0{lowerStartRound} & 0b0000000000000001) =  (Y1{lowerStartRound} & 0b0000000000000100));\n"
-                )
-
-        stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
-            )
-        stp_file.write(
-                f"ASSERT((X1{upperEndRound} & 0b0000000000001111) = 0b0000000000000001);\n"
-            )
-        stp_file.write(
-                f"ASSERT((Y0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
-            )
-        stp_file.write(
-                f"ASSERT((Y1{upperEndRound} & 0b0000000000001111) = 0b0000000000000001);\n"
-            )
-        stp_file.write(
-                f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
-            )
-        stp_file.write(
-                f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
-            )
 
     def setupSPARXRound(
         self,
@@ -323,35 +277,57 @@ class SPARXRoundCipher(AbstractCipher):
         return command
 
 
-# def assertABCTVariables(stpfile, upper, lower):
-#     """
-#     Fix the input/outpu diff pattern for e1 and e0
-#     assert last 4 significant bits to be 0x0(X0), 0x1(X1)
-#     assert last 4 significant bits to be both odd or both even, (X0),(X1)--> lower trail
+def setupSwitchConstraints(
+        stp_file, self, upperEndRound, switchRound, lowerStartRound
+    ):
+        """
+        - this function is designed for coded switch constraints in ABCT for SPARX cipher
+        - the position of bits are varies based on cipher design** (rotation**)
+        - the clauses are served for single switch pattern only
+        - 0,1,x,x
+        """
+        if (lowerStartRound) % self.rounds_per_step == 0:
+            """
+                when switch round=2,
+                - need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
+                - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
+                """
+            stp_file.write(
+                    f"ASSERT((X0A{switchRound} & 0b0000000000000001) =  (X1A{switchRound} & 0b0000000000000100));\n"
+                )
+            stp_file.write(
+                    f"ASSERT((Y0A{switchRound} & 0b0000000000000001) =  (Y1A{switchRound} & 0b0000000000000100));\n"
+                )
+            # stp_file.write(
+            #     f"ASSERT((X0{lowerStartRound} & 0b0000000000000001) =  (X1{lowerStartRound} & 0b0000000000000001));\n"
+            # )
+            # stp_file.write(
+            #     f"ASSERT((Y0{lowerStartRound} & 0b0000000000000001) =  (Y1{lowerStartRound} & 0b0000000000000001));\n"
+            # )
 
-#     "- X00: 0x" << beta_x
-#     "- X10: 0x" << (ROTL(beta_prime_x,2) xor beta_x)
-#     "- Y00: 0x" << beta_y
-#     "- Y10: 0x" << (ROTL(beta_prime_y,2) xor beta_y)
-#     """
+        else:
+            stp_file.write(
+                    f"ASSERT((X0{lowerStartRound} & 0b0000000000000001) =  (X1{lowerStartRound} & 0b0000000000000100));\n"
+                )
+            stp_file.write(
+                    f"ASSERT((Y0{lowerStartRound} & 0b0000000000000001) =  (Y1{lowerStartRound} & 0b0000000000000100));\n"
+                )
 
-#     stpfile.write(f"ASSERT((X0{upper} & 0b0000000000001111) = 0b0000000000000000);\n")
-#     # some patterns with first 2 bits== 0,1 and last 2 bits==0 will produce X1 end with 0x1(4bits)
-#     stpfile.write(f"ASSERT((X1{upper} & 0b1100000000000011) = 0b0100000000000000);\n")
-#     stpfile.write(f"ASSERT((Y0{upper} & 0b0000000000001111) = 0b0000000000000000);\n")
-#     stpfile.write(f"ASSERT((Y1{upper} & 0b1100000000000011) = 0b0100000000000000);\n")
-
-#     # lower trail
-#     stpfile.write(
-#         f"ASSERT(X0{lower} & 0b0000000000000001 =  X1{lower} & 0b0000000000000001);\n"
-#     )
-#     stpfile.write(
-#         f"ASSERT(Y0{lower} & 0b0000000000000001 =  Y1{lower} & 0b0000000000000001);\n"
-#     )
-#     stpfile.write(
-#         f"ASSERT(NOT(X0{lower}|X1{lower}|Y0{lower}|Y1{lower}) = 0b0000000000000000);\n"
-#     )
-#     stpfile.write(
-#         f"ASSERT(NOT(X0{upper}|X1{upper}|Y0{upper}|Y1{upper}) = 0b0000000000000000);\n"
-#     )
-#     return
+        stp_file.write(
+                f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
+            )
+        stp_file.write(
+                f"ASSERT((X1{upperEndRound} & 0b0000000000001111) = 0b0000000000000001);\n"
+            )
+        stp_file.write(
+                f"ASSERT((Y0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
+            )
+        stp_file.write(
+                f"ASSERT((Y1{upperEndRound} & 0b0000000000001111) = 0b0000000000000001);\n"
+            )
+        stp_file.write(
+                f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
+            )
+        stp_file.write(
+                f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
+            )
