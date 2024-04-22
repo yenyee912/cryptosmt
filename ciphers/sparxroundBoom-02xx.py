@@ -92,8 +92,6 @@ class SPARXRoundCipher(AbstractCipher):
                 stp_file, weight, wleft + wright, wordsize, 1
             )
 
-            
-
             for i in range(rounds):
                 # if parameters["skipround"] == (i + 1):
                 #     continue
@@ -293,20 +291,23 @@ class SPARXRoundCipher(AbstractCipher):
                 - need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
                 - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
                 - 0,2==> check 3rd bits of c is === to 3rd bits of d
-                """
+                                f"ASSERT((X0A{switchRound} & 0b0000000000000100) =  (X1A{switchRound} & 0b0000000000010000));\n"
+
+          
+                    """
             stp_file.write(
-                f"ASSERT((X0A{switchRound} & 0b0000000000000100) =  (X1A{switchRound} & 0b0000000000010000));\n"
+                f"ASSERT((X0A{switchRound} & 0b0000000000000010) =  (X1A{switchRound} & 0b0000000000001000));\n"
             )
             stp_file.write(
-                f"ASSERT((Y0A{switchRound} & 0b0000000000000100) =  (Y1A{switchRound} & 0b0000000000010000));\n"
+                f"ASSERT((Y0A{switchRound} & 0b0000000000000010) =  (Y1A{switchRound} & 0b0000000000001000));\n"
             )
 
         else:
             stp_file.write(
-                f"ASSERT((X0{lowerStartRound} & 0b0000000000000100) =  (X1{lowerStartRound} & 0b0000000000010000));\n"
+                f"ASSERT((X0{lowerStartRound} & 0b0000000000000010) =  (X1{lowerStartRound} & 0b0000000000001000));\n"
             )
             stp_file.write(
-                f"ASSERT((Y0{lowerStartRound} & 0b0000000000000100) =  (Y1{lowerStartRound} & 0b0000000000010000));\n"
+                f"ASSERT((Y0{lowerStartRound} & 0b0000000000000010) =  (Y1{lowerStartRound} & 0b0000000000001000));\n"
             )
 
         stp_file.write(
