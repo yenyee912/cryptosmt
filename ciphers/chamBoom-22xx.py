@@ -2,7 +2,7 @@
 Created on Dec 10, 2014
 
 @author: ralph
-this is model for switch of 0,1,
+this is model for switch of 2,2
 
 """
 

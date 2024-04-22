@@ -20,9 +20,11 @@ from fractions import gcd
 
 
 def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
+    # while parameters["maxweight"] < (parameters["wordsize"] / 2):
     startTime = time.time()
     switchRound = parameters["switchround"]
 
+    # print("beforeeee-----", parameters["skipround"])
     parameters["rounds"] = parameters["switchround"] + parameters["lowertrail"]
     characteristic = searchDifferentialTrail(
         cipher,
@@ -30,6 +32,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
         startTime,
     )
 
+    # get a,b,d,g from char, feed to abct, see if match
     # use try, might not have trail generated
     try:
         if characteristic.getStatus():
@@ -45,10 +48,18 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             right_beta_prime = int(characteristic.getData()[upperEndRound][3], 16)
 
             lowerStartRound = switchRound + 1
-            left_delta = int(characteristic.getData()[lowerStartRound][0], 16)
-            left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
-            right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
-            right_delta_prime = int(characteristic.getData()[lowerStartRound][3], 16)
+            if lowerStartRound % 3 == 0:  # take the output from A2
+                left_delta = int(characteristic.getData()[switchRound][4], 16)
+                left_delta_prime = int(characteristic.getData()[switchRound][5], 16)
+                right_delta = int(characteristic.getData()[switchRound][6], 16)
+                right_delta_prime = int(characteristic.getData()[switchRound][7], 16)
+            else:
+                left_delta = int(characteristic.getData()[lowerStartRound][0], 16)
+                left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
+                right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
+                right_delta_prime = int(
+                    characteristic.getData()[lowerStartRound][3], 16
+                )
 
             lowerEndRound = switchRound + parameters["lowertrail"]
             left_gamma = int(characteristic.getData()[lowerEndRound][0], 16)
@@ -59,24 +70,24 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             parameters["upperVariables"] = {
                 "X00": "0x" + format(left_alpha, "04x"),
                 "X10": "0x" + format(left_alpha_prime, "04x"),
-                "X20": "0x" + format(right_alpha, "04x"),
-                "X30": "0x" + format(right_alpha_prime, "04x"),
+                "Y00": "0x" + format(right_alpha, "04x"),
+                "Y10": "0x" + format(right_alpha_prime, "04x"),
                 f"X0{upperEndRound}": "0x" + format(left_beta, "04x"),
                 f"X1{upperEndRound}": "0x" + format(left_beta_prime, "04x"),
-                f"X2{upperEndRound}": "0x" + format(right_beta, "04x"),
-                f"X3{upperEndRound}": "0x" + format(right_beta_prime, "04x"),
+                f"Y0{upperEndRound}": "0x" + format(right_beta, "04x"),
+                f"Y1{upperEndRound}": "0x" + format(right_beta_prime, "04x"),
             }
 
             # could be x0A, edit later
             parameters["lowerVariables"] = {
                 f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
                 f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
-                f"X2{lowerStartRound}": "0x" + format(right_delta, "04x"),
-                f"X3{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
+                f"Y0{lowerStartRound}": "0x" + format(right_delta, "04x"),
+                f"Y1{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
                 f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
                 f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
-                f"X2{lowerEndRound}": "0x" + format(right_gamma, "04x"),
-                f"X3{lowerEndRound}": "0x" + format(right_gamma_prime, "04x"),
+                f"Y0{lowerEndRound}": "0x" + format(right_gamma, "04x"),
+                f"Y1{lowerEndRound}": "0x" + format(right_gamma_prime, "04x"),
             }
 
             print("Obtaining characteristics for trail E0 and E1")
@@ -97,19 +108,28 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             print("Rotating inputs...")
             # need to rotate the input(for display as the smt ady added the constraints)
 
-            # rotate the output of E0: x0+ x1<<1 (even round)
-            if switchRound % 2 == 0:
-                # encrypt
-                left_beta_prime = rotl(left_beta_prime, 15)
-                right_beta_prime = rotl(right_beta_prime, 15)
-                left_delta = rotl(left_delta, 8)
-                right_delta = rotl(right_delta, 8)
+            # rotate the output of E0, same as what we used to do when looking for corresponding beta for alpha
+            left_beta = rotl(left_beta, 9)
+            right_beta = rotl(right_beta, 9)
 
-            else:
-                left_beta_prime = rotl(left_beta_prime, 8)
-                right_beta_prime = rotl(right_beta_prime, 8)
-                left_delta = rotl(left_delta, 1)
-                right_delta = rotl(right_delta, 1)
+            # reverse the steps in "beta_generator", because smt produced the trail
+            # to generate beta: X10= ROTL(X10,2) XOR X00
+            # you have to decrypt to get ori beta in abct
+            if lowerStartRound % 3 == 0:
+                temp = rotl((right_delta ^ right_delta_prime), 8)
+                tmpVar = left_delta
+                left_delta = right_delta
+                right_delta = tmpVar
+
+                tmpVar = left_delta_prime
+                left_delta_prime = right_delta_prime
+                right_delta_prime = tmpVar
+
+                right_delta_prime = right_delta_prime ^ temp ^ left_delta_prime
+                right_delta = right_delta ^ temp ^ left_delta
+
+            left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
+            right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
 
             print(f"Matching the switch in Em(Round {switchRound})...")
             # leftSwitchProb = 1.0
@@ -120,10 +140,12 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             rightSwitchProb = checkAbct.check_abct_prob(
                 right_beta, right_beta_prime, right_delta, right_delta_prime
             )
+            totalSwitchProb = 0
             if leftSwitchProb != 0 and rightSwitchProb != 0:
-                totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb, 2))
-                totalWeight = (parameters["sweight"] * 2) + totalSwitchWeight
-                print("TotalWeight: ", totalWeight)
+                totalSwitchProb = leftSwitchProb * rightSwitchProb
+                # totalSwitchWeight = -math.log((totalSwitchProb), 2)
+                totalProb = (2 ** (-parameters["sweight"] * 2)) * totalSwitchProb
+                # print(totalSwitchProb, totalProb)
                 print(
                     f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
                 )
@@ -131,7 +153,29 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
                 print(
                     f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
                 )
-                print()
+                # do clustering for E0 then E1? or we can fix the xE0 and xE1 just search for whole trail?
+                parameters["fixedVariables"] = {}
+                for key in keyList[4:8]:  # Assuming keyList contains at least 4 keys
+                    parameters["fixedVariables"][key] = parameters["upperVariables"][
+                        key
+                    ]
+                parameters["sweight"] = 0
+                parameters["switchround"] = 0  # not trigger the extra constraints issue
+                parameters["rounds"] = parameters["uppertrail"]
+                startTime = time.time()
+                # print(parameters)
+
+                e0Prob = searchDifferentialTrail(
+                    cipher, parameters, startTime, searchLimit=upperweight, mode=4
+                )
+                print(e0Prob)
+                # parameters["fixedVariables"] = {
+                #     keyList2[0]: parameters["lowerVariables"][keyList2[0]],
+                #     keyList2[1]: parameters["lowerVariables"][keyList2[1]],
+                #     keyList2[2]: parameters["lowerVariables"][keyList2[2]],
+                #     keyList2[3]: parameters["lowerVariables"][keyList2[3]],
+                # }
+                # e0ProbChar
             else:
                 print("Either side of the switch is INVALID. Try again")
         # if getStatus==false

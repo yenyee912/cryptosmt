@@ -3,7 +3,8 @@ Created on Mar 29, 2017
 
 @author: ralph
 
-this is model for switch of 0,2,
+this is model for switch of 8,0
+exclude 8,0,0,8 and 8,0,8,8
 """
 
 from parser import stpcommands
@@ -283,45 +284,39 @@ class SPARXRoundCipher(AbstractCipher):
         - this function is designed for coded switch constraints in ABCT for SPARX cipher
         - the position of bits are varies based on cipher design** (rotation**)
         - the clauses are served for single switch pattern only
-        - 0,2,x,x
+        - 8,0,x,x
         """
         if (lowerStartRound) % self.rounds_per_step == 0:
-            """
-                when switch round=2,
-                - need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
-                - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
-                - 0,2==> check 3rd bits of c is === to 3rd bits of d
-                """
             stp_file.write(
-                f"ASSERT((X0A{switchRound} & 0b0000000000000100) =  (X1A{switchRound} & 0b0000000000010000));\n"
+                f"ASSERT(NOT(BVXOR((X0A{switchRound}&0b0000000000000011), (X1A{switchRound}&0b0000000000000100)) = 0b0000000000000010));\n"
             )
             stp_file.write(
-                f"ASSERT((Y0A{switchRound} & 0b0000000000000100) =  (Y1A{switchRound} & 0b0000000000010000));\n"
+                f"ASSERT(NOT(BVXOR((Y0A{switchRound}&0b0000000000000011), (Y1A{switchRound}&0b0000000000000100)) = 0b0000000000000010));\n"
             )
 
         else:
             stp_file.write(
-                f"ASSERT((X0{lowerStartRound} & 0b0000000000000100) =  (X1{lowerStartRound} & 0b0000000000010000));\n"
+                f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000000000000011), (X1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
             )
             stp_file.write(
-                f"ASSERT((Y0{lowerStartRound} & 0b0000000000000100) =  (Y1{lowerStartRound} & 0b0000000000010000));\n"
+                f"ASSERT(NOT(BVXOR((Y0{lowerStartRound}&0b0000000000000011), (Y1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
             )
 
         stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
-            )
+            f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000010000000000);\n"
+        )
         stp_file.write(
-                f"ASSERT((X1{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-            )
+            f"ASSERT((X1{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+        )
         stp_file.write(
-                f"ASSERT((Y0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
-            )
+            f"ASSERT((Y0{upperEndRound} & 0b0000011110000000) = 0b0000010000000000);\n"
+        )
         stp_file.write(
-                f"ASSERT((Y1{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-            )
+            f"ASSERT((Y1{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+        )
         stp_file.write(
-                f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
-            )
+            f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
+        )
         stp_file.write(
-                f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
-            )
+            f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
+        )

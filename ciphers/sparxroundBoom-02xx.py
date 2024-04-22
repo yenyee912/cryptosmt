@@ -92,6 +92,8 @@ class SPARXRoundCipher(AbstractCipher):
                 stp_file, weight, wleft + wright, wordsize, 1
             )
 
+            
+
             for i in range(rounds):
                 # if parameters["skipround"] == (i + 1):
                 #     continue

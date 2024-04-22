@@ -179,53 +179,42 @@ class CHAMCipher(AbstractCipher):
         """
         if switchRound % 2 == 0:
             stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                f"ASSERT((X1{upperEndRound} & 0b0000000000011110) = 0b0000000000000100);\n"
+                f"ASSERT((X1{upperEndRound} & 0b0000000000011110) = 0b0000000000000010);\n"
             )
             stp_file.write(
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
+                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                f"ASSERT((X3{upperEndRound} & 0b0000000000011110) = 0b0000000000000100);\n"
-            )
-
-            # stp_file.write(
-            #     # x0 no move, x1 need rotate left by 1
-            #     # for cham, x1 no move, x0 move left by 8
-            #     # f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000000000000011), (X1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
-            # )
-            stp_file.write(
-                f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000001100000000), (X1{lowerStartRound}&0b0000000000000001)) = 0b0000001000000000));\n"
+                f"ASSERT((X3{upperEndRound} & 0b0000000000011110) = 0b0000000000000010);\n"
             )
             stp_file.write(
-                f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000001100000000), (X3{lowerStartRound}&0b0000000000000001)) = 0b0000001000000000));\n"
+                f"ASSERT((X0{lowerStartRound} & 0b0000000100000000)= (X1{lowerStartRound} & 0b0000000000000001));\n"
+            )
+            stp_file.write(
+                f"ASSERT((X2{lowerStartRound} & 0b0000000100000000)= (X3{lowerStartRound} & 0b0000000000000001));\n"
             )
 
         else:
             stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
+                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000000100000000);\n"
             )
             stp_file.write(
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
+                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
-            )
-            # stp_file.write(
-            #     # x0 no move, x1 need rotate left by 1
-            #     # for cham, x1 no move, x0 move left by 1
-            #     # f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000000000000011), (X1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
-            # )
-            stp_file.write(
-                f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000000000000110), (X1{lowerStartRound}&0b0000000000000001)) = 0b0000000000000100));\n"
+                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000000100000000);\n"
             )
             stp_file.write(
-                f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000000000000110), (X3{lowerStartRound}&0b0000000000000001)) = 0b0000000000000100));\n"
+                f"ASSERT((X0{lowerStartRound} & 0b0000000000000010)= (X1{lowerStartRound} & 0b0000000000000001));\n"
+            )
+            stp_file.write(
+                f"ASSERT((X2{lowerStartRound} & 0b0000000000000010)= (X3{lowerStartRound} & 0b0000000000000001));\n"
             )
 
         stp_file.write(

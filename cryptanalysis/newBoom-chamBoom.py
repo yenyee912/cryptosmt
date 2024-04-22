@@ -99,15 +99,14 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
 
             # rotate the output of E0: x0+ x1<<1 (even round)
             if switchRound % 2 == 0:
-                # encrypt
                 left_beta_prime = rotl(left_beta_prime, 15)
-                right_beta_prime = rotl(right_beta_prime, 15)
+                right_beta_prime = rotl(left_beta_prime, 15)
                 left_delta = rotl(left_delta, 8)
                 right_delta = rotl(right_delta, 8)
 
             else:
                 left_beta_prime = rotl(left_beta_prime, 8)
-                right_beta_prime = rotl(right_beta_prime, 8)
+                right_beta_prime = rotl(left_beta_prime, 8)
                 left_delta = rotl(left_delta, 1)
                 right_delta = rotl(right_delta, 1)
 
@@ -120,10 +119,11 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             rightSwitchProb = checkAbct.check_abct_prob(
                 right_beta, right_beta_prime, right_delta, right_delta_prime
             )
+            totalSwitchProb = 0
             if leftSwitchProb != 0 and rightSwitchProb != 0:
-                totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb, 2))
-                totalWeight = (parameters["sweight"] * 2) + totalSwitchWeight
-                print("TotalWeight: ", totalWeight)
+                totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb), 2)
+                totalWeight = parameters["sweight"] * 2 + totalSwitchWeight
+                # print(totalSwitchProb, totalProb)
                 print(
                     f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
                 )
@@ -131,7 +131,6 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
                 print(
                     f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
                 )
-                print()
             else:
                 print("Either side of the switch is INVALID. Try again")
         # if getStatus==false

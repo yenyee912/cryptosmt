@@ -11,7 +11,7 @@ To support WARP, the modified stpcommands must be included because the state wor
 
 from cryptanalysis import search, boomerang, newBoom
 from ciphers import simon, speck, simonlinear, warp, sparxroundBoom
-from ciphers import sparx, sparxround, cham
+from ciphers import sparx, sparxround, cham, chamBoom
 from config import PATH_STP, PATH_CRYPTOMINISAT, PATH_BOOLECTOR
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -36,6 +36,7 @@ def startsearch(tool_parameters):
         "sparxround": sparxround.SPARXRoundCipher(),
         "sparxroundBoom": sparxroundBoom.SPARXRoundCipher(),
         "cham": cham.CHAMCipher(),
+        "chamBoom": chamBoom.CHAMCipher(),
     }
 
     cipher = None
@@ -97,19 +98,20 @@ def loadparameters(args):
     # Load default values
 
     params = {
-        "cipher": "sparxroundBoom",
-        "rounds": 5,  # uppertrail+ switchround=1r+ lowertrail
+        # "cipher": "sparxroundBoom",
+        "cipher": "chamBoom",
+        "rounds": 5,  # define by newBoom.py
         "skipround": 99,
-        "switchround": 9,  # which #round to switch
+        "switchround": 20,  # which #round to switch
         "uppertrail": 4,  # Number of rounds for E0
-        "lowertrail": 3,  # Number of rounds for E1
+        "lowertrail": 10,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
         "upperlimit": 0,  # cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
         "lowerlimit": 0,  # cluster up to +4 (128/32=4) - Will be clustered often, set to a conservative value
         "mode": 7,
         "wordsize": 16,
-        # "blocksize" : 64,
+        "blocksize": 64,
         "sweight": 0,
         "endweight": 1000,  # set to the higher weight limit + 1 (e.g. if uweight is higher than lweight, set end weight to uweight+1)
         "iterative": False,
@@ -118,7 +120,16 @@ def loadparameters(args):
         "latex": None,
         "nummessages": 1,
         "timelimit": -1,
-        "fixedVariables": {},
+        "fixedVariables": {
+            # "X00": "0x2015",
+            # "X10": "0x0210",
+            # "Y00": "0x0000",
+            # "Y10": "0x0000",
+            # "X012": "0xAF1A",
+            # "X112": "0xBF30",
+            # "Y012": "0x850A",
+            # "Y112": "0x9520",
+        },
         "boomerangVariables": {},  # for system use only
         # ---- params for abct
         "lowerBoomerangVariables": {},
@@ -300,17 +311,15 @@ def main():
     checkenviroment()
     startsearch(params)
 
-
-# for a in range(5, 12):
-#     args = parser.parse_args()
-#     params = loadparameters(args)
-#     params["uppertrail"] = a
-#     params["lowertrail"] = 12 - a - 1
-#     params["switchround"] = a + 1
-#     # Check if enviroment is setup correctly.
-#     checkenviroment()
-#     # Start the solver
-#     startsearch(params)
+    # for a in range(3, 12):
+    #     args = parser.parse_args()
+    #     params = loadparameters(args)
+    #     params["switchround"] = a
+    #     params["lowertrail"] = 2
+    #     # Check if enviroment is setup correctly.
+    #     checkenviroment()
+    #     # Start the solver
+    #     startsearch(params)
 
 
 if __name__ == "__main__":
