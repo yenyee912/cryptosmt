@@ -1,3 +1,7 @@
+"""
+boomerang search script made for CHAM
+"""
+
 from parser import parsesolveroutput, stpcommands
 from cryptanalysis import search, diffchars
 from config import (
@@ -100,13 +104,13 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             # rotate the output of E0: x0+ x1<<1 (even round)
             if switchRound % 2 == 0:
                 left_beta_prime = rotl(left_beta_prime, 15)
-                right_beta_prime = rotl(left_beta_prime, 15)
+                right_beta_prime = rotl(right_beta_prime, 15)
                 left_delta = rotl(left_delta, 8)
                 right_delta = rotl(right_delta, 8)
 
             else:
                 left_beta_prime = rotl(left_beta_prime, 8)
-                right_beta_prime = rotl(left_beta_prime, 8)
+                right_beta_prime = rotl(right_beta_prime, 8)
                 left_delta = rotl(left_delta, 1)
                 right_delta = rotl(right_delta, 1)
 

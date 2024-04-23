@@ -1,3 +1,7 @@
+"""
+boomerang search script made for CHAM
+"""
+
 from parser import parsesolveroutput, stpcommands
 from cryptanalysis import search, diffchars
 from config import (
@@ -99,7 +103,6 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
 
             # rotate the output of E0: x0+ x1<<1 (even round)
             if switchRound % 2 == 0:
-                # encrypt
                 left_beta_prime = rotl(left_beta_prime, 15)
                 right_beta_prime = rotl(right_beta_prime, 15)
                 left_delta = rotl(left_delta, 8)
@@ -131,10 +134,8 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
                 print(
                     f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
                 )
-                print()
             else:
                 print("Either side of the switch is INVALID. Try again")
-        # if getStatus==false
         else:
             print(
                 f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"

@@ -1,3 +1,7 @@
+"""
+boomerang search script made for SPARXround
+"""
+
 from parser import parsesolveroutput, stpcommands
 from cryptanalysis import search, diffchars
 from config import (
