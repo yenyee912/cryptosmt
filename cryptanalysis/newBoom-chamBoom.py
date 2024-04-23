@@ -119,11 +119,10 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             rightSwitchProb = checkAbct.check_abct_prob(
                 right_beta, right_beta_prime, right_delta, right_delta_prime
             )
-            totalSwitchProb = 0
             if leftSwitchProb != 0 and rightSwitchProb != 0:
-                totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb), 2)
-                totalWeight = parameters["sweight"] * 2 + totalSwitchWeight
-                # print(totalSwitchProb, totalProb)
+                totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb, 2))
+                totalWeight = (parameters["sweight"] * 2) + totalSwitchWeight
+                print("TotalWeight: ", totalWeight)
                 print(
                     f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
                 )
@@ -133,7 +132,6 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
                 )
             else:
                 print("Either side of the switch is INVALID. Try again")
-        # if getStatus==false
         else:
             print(
                 f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"

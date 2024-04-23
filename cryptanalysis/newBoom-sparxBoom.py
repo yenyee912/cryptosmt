@@ -20,11 +20,9 @@ from fractions import gcd
 
 
 def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
-    # while parameters["maxweight"] < (parameters["wordsize"] / 2):
     startTime = time.time()
     switchRound = parameters["switchround"]
 
-    # print("beforeeee-----", parameters["skipround"])
     parameters["rounds"] = parameters["switchround"] + parameters["lowertrail"]
     characteristic = searchDifferentialTrail(
         cipher,
@@ -140,12 +138,11 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             rightSwitchProb = checkAbct.check_abct_prob(
                 right_beta, right_beta_prime, right_delta, right_delta_prime
             )
-            totalSwitchProb = 0
+
             if leftSwitchProb != 0 and rightSwitchProb != 0:
-                totalSwitchProb = leftSwitchProb * rightSwitchProb
-                # totalSwitchWeight = -math.log((totalSwitchProb), 2)
-                totalProb = (2 ** (-parameters["sweight"] * 2)) * totalSwitchProb
-                # print(totalSwitchProb, totalProb)
+                totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb, 2))
+                totalWeight = (parameters["sweight"] * 2) + totalSwitchWeight
+                print("TotalWeight: ", totalWeight)
                 print(
                     f"{upperEndRound} rounds uppertrail: \n{parameters['upperVariables']}"
                 )
@@ -153,29 +150,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
                 print(
                     f"{parameters['lowertrail']} rounds lowertrail: \n{parameters['lowerVariables']}"
                 )
-                # do clustering for E0 then E1? or we can fix the xE0 and xE1 just search for whole trail?
-                parameters["fixedVariables"] = {}
-                for key in keyList[4:8]:  # Assuming keyList contains at least 4 keys
-                    parameters["fixedVariables"][key] = parameters["upperVariables"][
-                        key
-                    ]
-                parameters["sweight"] = 0
-                parameters["switchround"] = 0  # not trigger the extra constraints issue
-                parameters["rounds"] = parameters["uppertrail"]
-                startTime = time.time()
-                # print(parameters)
 
-                e0Prob = searchDifferentialTrail(
-                    cipher, parameters, startTime, searchLimit=upperweight, mode=4
-                )
-                print(e0Prob)
-                # parameters["fixedVariables"] = {
-                #     keyList2[0]: parameters["lowerVariables"][keyList2[0]],
-                #     keyList2[1]: parameters["lowerVariables"][keyList2[1]],
-                #     keyList2[2]: parameters["lowerVariables"][keyList2[2]],
-                #     keyList2[3]: parameters["lowerVariables"][keyList2[3]],
-                # }
-                # e0ProbChar
             else:
                 print("Either side of the switch is INVALID. Try again")
         # if getStatus==false
