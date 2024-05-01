@@ -2,7 +2,7 @@
 Created on Dec 10, 2014
 
 @author: ralph
-this is model for switch of 0,2,
+this is model for switch of 17r e0 trail from 
 
 """
 
@@ -175,49 +175,56 @@ class CHAMCipher(AbstractCipher):
         """
         - this function is designed for coded switch constraints for ABCT
         - the clauses are served for single switch pattern only
-        - 0,1,x,x
+        - 'X017': '0x0400',
+          'X117': '0x0004', <<1= 0x0008
+          'X217': '0x0502',
+          'X317': '0x0088’}<<1= 0x0110
+        pattern = 0,8 and 2,0
         """
         if switchRound % 2 == 0:
-            stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-            )
-            stp_file.write(
-                f"ASSERT((X1{upperEndRound} & 0b0000000000011110) = 0b0000000000000100);\n"
-            )
-            stp_file.write(
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-            )
-            stp_file.write(
-                f"ASSERT((X3{upperEndRound} & 0b0000000000011110) = 0b0000000000000100);\n"
-            )
+            # stp_file.write(
+            #     f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+            # )
+            # stp_file.write(
+            #     f"ASSERT((X1{upperEndRound} & 0b0000000000011110) = 0b0000000000000100);\n"
+            # )
+            # stp_file.write(
+            #     f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+            # )
+            # stp_file.write(
+            #     f"ASSERT((X3{upperEndRound} & 0b0000000000011110) = 0b0000000000000100);\n"
+            # )
+
+            #
 
             stp_file.write(
-                f"ASSERT((X0{lowerStartRound} & 0b0000001000000000)= (X1{lowerStartRound} & 0b0000000000000010));\n"
+                # 0,2: f"ASSERT((X0{lowerStartRound} & 0b0000001000000000)= (X1{lowerStartRound} & 0b0000000000000010));\n"
+                f"ASSERT((X0{lowerStartRound} & 0b0000100000000000)= (X1{lowerStartRound} & 0b0000000000001000));\n"
             )
             stp_file.write(
-                f"ASSERT((X2{lowerStartRound} & 0b0000001000000000)= (X3{lowerStartRound} & 0b0000000000000010));\n"
+                f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000000100000000), (X3{lowerStartRound}&0b0000000000000011)) = 0b0000000100000010));\n"
             )
 
-        else:
-            stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-            )
-            stp_file.write(
-                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
-            )
-            stp_file.write(
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-            )
-            stp_file.write(
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
-            )
-            stp_file.write(
-                # f"ASSERT((X0A{switchRound} & 0b0000000000000100) =  (X1A{switchRound} & 0b0000000000010000));\n"
-                f"ASSERT((X0{lowerStartRound} & 0b0000000000000100)= (X1{lowerStartRound} & 0b0000000000000010));\n"
-            )
-            stp_file.write(
-                f"ASSERT((X2{lowerStartRound} & 0b0000000000000100)= (X3{lowerStartRound} & 0b0000000000000010));\n"
-            )
+        # else:
+        #     stp_file.write(
+        #         f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+        #     )
+        #     stp_file.write(
+        #         f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
+        #     )
+        #     stp_file.write(
+        #         f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+        #     )
+        #     stp_file.write(
+        #         f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
+        #     )
+        #     stp_file.write(
+        #         # sparx02xx: f"ASSERT((X0{lowerStartRound} & 0b0000000000000010) =  (X1{lowerStartRound} & 0b0000000000001000));\n"
+        #         f"ASSERT((X0{lowerStartRound} & 0b0000000000000100)= (X1{lowerStartRound} & 0b0000000000000010));\n"
+        #     )
+        #     stp_file.write(
+        #         f"ASSERT((X2{lowerStartRound} & 0b0000000000000100)= (X3{lowerStartRound} & 0b0000000000000010));\n"
+        #     )
 
         stp_file.write(
             f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|X2{upperEndRound}|X3{upperEndRound}) = 0b0000000000000000);\n"

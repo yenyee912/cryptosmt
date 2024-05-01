@@ -182,13 +182,13 @@ class CHAMCipher(AbstractCipher):
                 f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                f"ASSERT((X1{upperEndRound} & 0b0000000000011110) = 0b0000000000000010);\n"
+                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b1000000000000000);\n"
             )
             stp_file.write(
                 f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
             )
             stp_file.write(
-                f"ASSERT((X3{upperEndRound} & 0b0000000000011110) = 0b0000000000000010);\n"
+                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b1000000000000000);\n"
             )
             stp_file.write(
                 f"ASSERT((X0{lowerStartRound} & 0b0000000100000000)= (X1{lowerStartRound} & 0b0000000000000001));\n"

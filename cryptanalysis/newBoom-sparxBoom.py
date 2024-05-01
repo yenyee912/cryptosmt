@@ -157,7 +157,6 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
 
             else:
                 print("Either side of the switch is INVALID. Try again")
-        # if getStatus==false
         else:
             print(
                 f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"
