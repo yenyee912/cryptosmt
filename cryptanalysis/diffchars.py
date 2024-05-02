@@ -53,8 +53,7 @@ class DifferentialCharacteristic(object):
                         # TODO: Temporary hack for cham64
                         elif (
                             self.cipher.name == "cham"
-                            or self.cipher.name == "speck"
-                            or self.cipher.name == "sparxround1r"
+                            or self.cipher.name == "chamBoom"
                             or self.cipher.name == "sparxround"
                             or self.cipher.name == "sparxroundBoom"
                         ):

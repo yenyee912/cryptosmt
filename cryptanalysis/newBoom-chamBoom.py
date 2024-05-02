@@ -36,7 +36,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
 
     # use try, might not have trail generated
     try:
-        if characteristic.getStatus():
+        if characteristic:
             upperEndRound = switchRound - 1
             left_alpha = int(characteristic.getData()[0][0], 16)
             left_alpha_prime = int(characteristic.getData()[0][1], 16)
@@ -100,19 +100,17 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
             )
             print("Rotating inputs...")
             # need to rotate the input(for display as the smt ady added the constraints)
-
-            # rotate the output of E0: x0+ x1<<1 (even round)
             if switchRound % 2 == 0:
-                left_beta_prime = rotl(left_beta_prime, 15)
-                right_beta_prime = rotl(right_beta_prime, 15)
+                left_beta_prime = rotl(left_beta_prime, 1)
+                right_beta_prime = rotl(right_beta_prime, 1)
                 left_delta = rotl(left_delta, 8)
                 right_delta = rotl(right_delta, 8)
 
             else:
                 left_beta_prime = rotl(left_beta_prime, 8)
                 right_beta_prime = rotl(right_beta_prime, 8)
-                left_delta = rotl(left_delta, 1)
-                right_delta = rotl(right_delta, 1)
+                left_delta = rotl(left_delta, 15)
+                right_delta = rotl(right_delta, 15)
 
             print(f"Matching the switch in Em(Round {switchRound})...")
             # leftSwitchProb = 1.0
@@ -222,10 +220,7 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32, mode=
             break
         parameters["sweight"] += 1
 
-    if mode == 4:
-        return parameters["sweight"]
-    else:
-        return characteristic
+    return characteristic
 
 
 # define ROTL(x, n) ( ((x) << n) | ((x) >> (16 - (n))))

@@ -36,7 +36,7 @@ def findARXBoomerangDifferentialByMatchSwitch(cipher, parameters):
 
     # use try, might not have trail generated
     try:
-        if characteristic.getStatus():
+        if characteristic:
             upperEndRound = switchRound - 1
             left_alpha = int(characteristic.getData()[0][0], 16)
             left_alpha_prime = int(characteristic.getData()[0][1], 16)
@@ -220,10 +220,7 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32, mode=
             break
         parameters["sweight"] += 1
 
-    if mode == 4:
-        return parameters["sweight"]
-    else:
-        return characteristic
+    return characteristic
 
 
 # define ROTL(x, n) ( ((x) << n) | ((x) >> (16 - (n))))
