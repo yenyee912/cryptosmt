@@ -25,7 +25,7 @@ class CHAMCipher(AbstractCipher):
         """
         Returns the print format.
         """
-        return ["X0", "X1", "X2", "X3", "X0X1" "w"]
+        return ["X0", "X1", "X2", "X3", "w"]
 
     def createSTP(self, stp_filename, parameters):
         """
