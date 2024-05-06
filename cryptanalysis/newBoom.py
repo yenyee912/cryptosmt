@@ -43,7 +43,7 @@ def searchSPARX(cipher, parameters):
         startTime,
     )
     try:
-        if characteristic():
+        if characteristic:
             upperEndRound = switchRound - 1
             left_alpha = int(characteristic.getData()[0][0], 16)
             left_alpha_prime = int(characteristic.getData()[0][1], 16)
@@ -162,7 +162,7 @@ def searchSPARX(cipher, parameters):
                 print("Either side of the switch is INVALID. Try again")
         else:
             print(
-                f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"
+                f"No characteristic found for the swicth at R{switchRound}. Please check the variables and weights setting.\n"
             )
     except Exception as e:
         print("Error occured here...", e)
@@ -280,7 +280,7 @@ def searchCHAM(cipher, parameters):
                 print("Either side of the switch is INVALID. Try again")
         else:
             print(
-                f"No characteristic found for the swicth at r{switchRound}. Please check the variables and weights setting.\n"
+                f"No characteristic found for the swicth at R{switchRound}. Please check the variables and weights setting.\n"
             )
     except Exception as e:
         print("Error occured here...", e)
@@ -291,7 +291,6 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
     Search top or bottom trail (characteristic) of a boomerang
     modify from search.findMinWeightCharacteristic and boomerang.boomerangTrail
     """
-    print(cipher.name)
     print(f"Starting search for boomerang characteristic with minimal weight for")
     print(
         f"{cipher.name} - Rounds: {parameters['rounds']} Switch: {parameters['switchround']} Wordsize: {parameters['wordsize']}"

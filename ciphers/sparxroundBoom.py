@@ -93,17 +93,11 @@ class SPARXRoundCipher(AbstractCipher):
             )
 
             for i in range(rounds):
-                # if parameters["skipround"] == (i + 1):
-                #     continue
+                if parameters["switchround"] == i+1:
+                    continue
 
-                # the model do linear layer at r3-1, then show result in r3, so we need i+1
                 if (i + 1) % self.rounds_per_step == 0:
-                    if (
-                        parameters["switchround"] == (i + 1) % self.rounds_per_step == 0
-                    ):  # if switch at front part
-                        continue
-                    else:
-                        self.setupSPECKEYRound(
+                    self.setupSPECKEYRound(
                             stp_file,
                             x0[i],
                             x1[i],
@@ -112,7 +106,7 @@ class SPARXRoundCipher(AbstractCipher):
                             wleft[i],
                             wordsize,
                         )
-                        self.setupSPECKEYRound(
+                    self.setupSPECKEYRound(
                             stp_file,
                             y0[i],
                             y1[i],
@@ -121,7 +115,7 @@ class SPARXRoundCipher(AbstractCipher):
                             wright[i],
                             wordsize,
                         )
-                        self.setupSPARXRound(
+                    self.setupSPARXRound(
                             stp_file,
                             x0_after_A[i],
                             x1_after_A[i],
@@ -136,11 +130,8 @@ class SPARXRoundCipher(AbstractCipher):
                         )
 
                 else:
-                    if parameters["switchround"] == i:
-                        continue
-                    else:
-                        # do round function left (SPECKEY)
-                        self.setupSPECKEYRound(
+                    # do round function left (SPECKEY)
+                    self.setupSPECKEYRound(
                             stp_file,
                             x0[i],
                             x1[i],
@@ -149,6 +140,9 @@ class SPARXRoundCipher(AbstractCipher):
                             wleft[i],
                             wordsize,
                         )
+                    if (parameters["switchround"] + 1) == (i + 1):
+                        continue
+                    else:
                         # do round function right (SPECKEY)
                         self.setupSPECKEYRound(
                             stp_file,
@@ -159,7 +153,6 @@ class SPARXRoundCipher(AbstractCipher):
                             wright[i],
                             wordsize,
                         )
-                        # stp_file.write("i first\n")
 
             # No all zero characteristic
             stpcommands.assertNonZero(stp_file, x0 + x1 + y0 + y1, wordsize)
@@ -211,6 +204,7 @@ class SPARXRoundCipher(AbstractCipher):
         command = ""
         command += self.L(x0_in, x1_in, x0_after_L, x1_after_L)
 
+        # swap
         # Assert(x_out = L(A^a(x_in)) xor A^a(y_in))
         command += "ASSERT(" + x0_out + " = "
         command += "BVXOR(" + x0_after_L + " , " + y0_in + ")"
@@ -281,17 +275,12 @@ class SPARXRoundCipher(AbstractCipher):
     ):
         """
         - this function is designed for coded switch constraints in ABCT for SPARX cipher
-        - the position of bits are varies based on cipher design** (rotation**)
-        - the clauses are served for single switch pattern only
-        - 0,2,x,x
+        - the position of bits are varies based on cipher design: rotation
         """
         if (lowerStartRound) % self.rounds_per_step == 0:
             """
-                when switch round=2,
-                - need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
-                - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
-                - 0,2==> check 3rd bits of c is === to 3rd bits of d
-                """
+                - pattern: 0,2==> check 3rd bits of c is === to 3rd bits of d
+             """
             stp_file.write(
                 f"ASSERT((X0A{switchRound} & 0b0000000000000100) =  (X1A{switchRound} & 0b0000000000010000));\n"
             )
@@ -319,9 +308,95 @@ class SPARXRoundCipher(AbstractCipher):
         stp_file.write(
                 f"ASSERT((Y1{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
             )
+
         stp_file.write(
                 f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
             )
         stp_file.write(
                 f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
             )
+
+    # def setupSwitchConstraints(
+    #     self, stp_file, upperEndRound, switchRound, lowerStartRound
+    # ):
+    #     if (lowerStartRound) % self.rounds_per_step == 0:
+    #         """
+    #             - pattern 0,1 ==> need to make sure X0A2 and X1A2(Y as well), follow the A box rule to preserve the Evenness/Oddness
+    #             - make sure the X03 and X13 shared same eveness/oddness (Y as well)-just to double confirm
+    #         """
+    #         stp_file.write(
+    #                 f"ASSERT((X0A{switchRound} & 0b0000000000000001) =  (X1A{switchRound} & 0b0000000000000100));\n"
+    #             )
+    #         stp_file.write(
+    #                 f"ASSERT((Y0A{switchRound} & 0b0000000000000001) =  (Y1A{switchRound} & 0b0000000000000100));\n"
+    #             )
+    #     else:
+    #         stp_file.write(
+    #                 f"ASSERT((X0{lowerStartRound} & 0b0000000000000001) =  (X1{lowerStartRound} & 0b0000000000000100));\n"
+    #             )
+    #         stp_file.write(
+    #                 f"ASSERT((Y0{lowerStartRound} & 0b0000000000000001) =  (Y1{lowerStartRound} & 0b0000000000000100));\n"
+    #             )
+
+    #     stp_file.write(
+    #             f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
+    #         )
+    #     stp_file.write(
+    #             f"ASSERT((X1{upperEndRound} & 0b0000000000001111) = 0b0000000000000001);\n"
+    #         )
+    #     stp_file.write(
+    #             f"ASSERT((Y0{upperEndRound} & 0b0000011110000000) = 0b0000000000000000);\n"
+    #         )
+    #     stp_file.write(
+    #             f"ASSERT((Y1{upperEndRound} & 0b0000000000001111) = 0b0000000000000001);\n"
+    #         )
+    #     stp_file.write(
+    #             f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
+    #         )
+    #     stp_file.write(
+    #             f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
+    #         )
+
+    # def setupSwitchConstraints(
+    #     self, stp_file, upperEndRound, switchRound, lowerStartRound
+    # ):
+
+    #     if (lowerStartRound) % self.rounds_per_step == 0:
+#         """
+#             - pattern 2,2 ==> when c ends with 10, d=odd
+#         """
+
+#         stp_file.write(
+#             f"ASSERT(NOT(BVXOR((X0A{switchRound}&0b0000000000000011), (X1A{switchRound}&0b0000000000000100)) = 0b0000000000000010));\n"
+#         )
+#         stp_file.write(
+#             f"ASSERT(NOT(BVXOR((Y0A{switchRound}&0b0000000000000011), (Y1A{switchRound}&0b0000000000000100)) = 0b0000000000000010));\n"
+#         )
+
+#     else:
+#         stp_file.write(
+#             f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000000000000011), (X1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
+#         )
+#         stp_file.write(
+#             f"ASSERT(NOT(BVXOR((Y0{lowerStartRound}&0b0000000000000011), (Y1{lowerStartRound}&0b0000000000000100)) = 0b0000000000000010));\n"
+#         )
+
+#     stp_file.write(
+#         # f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000010000000000);\n"
+#         f"ASSERT((X0{upperEndRound} & 0b0000011110000000) = 0b0000000100000000);\n"
+#     )
+#     stp_file.write(
+#         f"ASSERT((X1{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
+#     )
+#     stp_file.write(
+#         f"ASSERT((Y0{upperEndRound} & 0b0000011110000000) = 0b0000000100000000);\n"
+#     )
+#     stp_file.write(
+#         f"ASSERT((Y1{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
+#     )
+#     stp_file.write(
+#         f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|Y0{upperEndRound}|Y1{upperEndRound}) = 0b0000000000000000);\n"
+#     )
+#     stp_file.write(
+#         f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|Y0{lowerStartRound}|Y1{lowerStartRound}) = 0b0000000000000000);\n"
+#     )
