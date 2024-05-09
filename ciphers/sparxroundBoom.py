@@ -130,8 +130,11 @@ class SPARXRoundCipher(AbstractCipher):
                         )
 
                 else:
+                    if (parameters["switchround"] + 1) == (i + 1):
+                        continue
+                    else:
                     # do round function left (SPECKEY)
-                    self.setupSPECKEYRound(
+                      self.setupSPECKEYRound(
                             stp_file,
                             x0[i],
                             x1[i],
@@ -140,11 +143,8 @@ class SPARXRoundCipher(AbstractCipher):
                             wleft[i],
                             wordsize,
                         )
-                    if (parameters["switchround"] + 1) == (i + 1):
-                        continue
-                    else:
                         # do round function right (SPECKEY)
-                        self.setupSPECKEYRound(
+                      self.setupSPECKEYRound(
                             stp_file,
                             y0[i],
                             y1[i],

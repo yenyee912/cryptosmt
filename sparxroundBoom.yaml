@@ -1,0 +1,41 @@
+# Example input file for sparxround (sparxroundBoom params) - " 12 rounds to do clustering
+---
+cipher: sparxroundBoom
+sweight: 23
+endweight: 32
+# skipround: 6
+rounds: 13
+switchround: 6
+lowertrail: 7
+wordsize: 16
+mode: 4
+timelimit: 360
+fixedVariables:
+- X00: "0x0881"
+- X10: "0x0205"
+- Y00: "0x0000"
+- Y10: "0x0000"
+- X01: "0x0014"
+- X02: "0x2000"
+- X05: "0x0040"
+- X15: "0x0542"
+- Y05: "0x0040"
+- Y15: "0x0542"
+# - X07: "0x0000"
+# - X17: "0x0000"
+# - Y07: "0x2800"
+# - Y17: "0x0010"
+# - X012: "0xAF1A"
+# - X112: "0xBF30"
+# - Y012: "0x850A"
+# - Y112: "0x9520"
+
+# - X00: "0x0000"
+# - X10: "0x0000"
+# - Y00: "0x2800"
+# - Y10: "0x0010"
+# - X06: "0xAF1A"
+# - X16: "0xBF30"
+# - Y06: "0x850A"
+# - Y16: "0x9520"
+...

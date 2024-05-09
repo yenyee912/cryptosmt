@@ -1,5 +1,6 @@
 import pathlib
 import time
+import random
 
 libname = pathlib.Path().absolute()
 
@@ -107,11 +108,71 @@ def verify(left_delta, left_delta_prime, right_delta, right_delta_prime):
     print(left_delta, hex(left_delta_prime), right_delta, right_delta_prime)
 
 
-def main():
-    # data = parse_abct_prob()
-    # tabulate(data)
+def test_sparx_round(skipround, switchround):
+    for i in range(10):
+        if skipround == i + 1:
+            print(f"XXXXXXXX skip {i} for all ops?? XXXXX")
+            continue
 
-    verify(0x3807, 0x381B, 2, 0x3A)
+        if ((i + 1) % 3) == 0:
+            print(f"do round {i} left A")
+            print(f"do round {i} right A")
+            print(f"do round {i} sparx")
+        else:
+            print(f"do round {i} left A")
+            if (skipround + 1) == i + 1:
+                print(f"XXXXXXXX skip round {i} right A XXXXX")
+                continue
+            else:
+                print(f"do round {i} right A")
+    # print("\n==========sparxBoom========\n")
+    # for i in range(10):
+    #     if (switchround) == i + 1:
+    #         print(f"XXXXXXXX all ops XXXXX")
+    #         continue
+    #     if ((i + 1) % 3) == 0:
+    #         if switchround == (i + 1) % 3 == 0:
+    #             continue
+    #         else:
+    #             print(f"do round {i} left A")
+    #             print(f"do round {i} right A")
+    #             print(f"do round {i} sparx")
+
+    #     else:
+    #         if (switchround) == i:
+    #             print(f"XXXXXXXX skip round {i} left A XXXXX")
+    #             print(f"XXXXXXXX skip round {i} right A XXXXX")
+    #             continue
+    #         else:
+    #             print(f"do round {i} left A")
+    #             print(f"do round {i} right A")
+
+
+def searchCharac():
+    return random.choice([True, False])
+
+
+def demo_mode2_sparx():
+    try:
+        charac = searchCharac()
+
+        if not charac:  # If charac is False, stop the loop
+            print("no charac")
+            return
+
+        while True:
+            valid = searchCharac()
+            if valid:
+                print("ok")
+                return
+            else:
+                print("block")
+    except Exception as e:
+        print("Error occurred here...", e)
+
+
+def main():
+    demo_mode2_sparx()
 
 
 if __name__ == "__main__":

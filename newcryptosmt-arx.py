@@ -98,21 +98,18 @@ def loadparameters(args):
     # Load default values
 
     params = {
-        # "cipher": "sparxroundBoom",
-        "cipher": "chamBoom",
-        "rounds": 5,  # define by newBoom.py
-        "skipround": 99,
-        "switchround": 20,  # which #round to switch
-        "uppertrail": 4,  # Number of rounds for E0
+        "cipher": "sparxroundBoom",
+        # "cipher": "chamBoom",
+        "rounds": 5,  # calculate by newBoom.py
+        "skipround": 99,  # for sparx
+        "switchround": 18,  # which #round to switch
         "lowertrail": 10,  # Number of rounds for E1
         "uweight": 0,  # Upper limit of weight for E0
         "lweight": 0,  # Upper limit of weight for E1
-        "upperlimit": 0,  # cluster up to +8 (128/16=8) - Upper will not be clustered too often, can be higher
-        "lowerlimit": 0,  # cluster up to +4 (128/32=4) - Will be clustered often, set to a conservative value
-        "mode": 7,
+        "mode": 4,
         "wordsize": 16,
         "blocksize": 64,
-        "sweight": 0,
+        "sweight": 30,
         "endweight": 1000,  # set to the higher weight limit + 1 (e.g. if uweight is higher than lweight, set end weight to uweight+1)
         "iterative": False,
         "boolector": False,
@@ -121,14 +118,14 @@ def loadparameters(args):
         "nummessages": 1,
         "timelimit": -1,
         "fixedVariables": {
-            # "X00": "0x2015",
-            # "X10": "0x0210",
-            # "Y00": "0x0000",
-            # "Y10": "0x0000",
-            # "X012": "0xAF1A",
-            # "X112": "0xBF30",
-            # "Y012": "0x850A",
-            # "Y112": "0x9520",
+            # "X00": "0x8200",
+            # "X10": "0x0100",
+            # "X20": "0x0001",
+            # "X30": "0x8000",
+            # "X017": "0x0400",
+            # "X117": "0x0004",
+            # "X217": "0x0502",
+            # "X317": "0x0088",
         },
         "boomerangVariables": {},  # for system use only
         # ---- params for abct
@@ -311,11 +308,12 @@ def main():
     checkenviroment()
     startsearch(params)
 
-    # for a in range(3, 12):
+    # for a in range(14, 20):
     #     args = parser.parse_args()
     #     params = loadparameters(args)
-    #     params["switchround"] = a
-    #     params["lowertrail"] = 2
+    #     # params["switchround"] = a
+    #     params["lowertrail"] = a
+    #     print(a)
     #     # Check if enviroment is setup correctly.
     #     checkenviroment()
     #     # Start the solver
