@@ -176,9 +176,9 @@ class SPARXRoundCipher(AbstractCipher):
                 upperEndRound = switchRound - 1  # round of E0 outputDiff
                 lowerStartRound = switchRound + 1
 
-                self.setupSwitchConstraints(
-                    stp_file, upperEndRound, switchRound, lowerStartRound
-                )
+                # self.setupSwitchConstraints(
+                #     stp_file, upperEndRound, switchRound, lowerStartRound
+                # )
 
             stpcommands.setupQuery(stp_file)
 

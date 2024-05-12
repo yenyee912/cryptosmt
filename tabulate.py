@@ -119,12 +119,12 @@ def test_sparx_round(skipround, switchround):
             print(f"do round {i} right A")
             print(f"do round {i} sparx")
         else:
+            # if (skipround + 1) == i:
+            #     print(f"XXXXXXXX skip round {i} right A XXXXX")
+            #     continue
+            # else:
             print(f"do round {i} left A")
-            if (skipround + 1) == i + 1:
-                print(f"XXXXXXXX skip round {i} right A XXXXX")
-                continue
-            else:
-                print(f"do round {i} right A")
+            print(f"do round {i} right A")
     # print("\n==========sparxBoom========\n")
     # for i in range(10):
     #     if (switchround) == i + 1:
@@ -148,31 +148,44 @@ def test_sparx_round(skipround, switchround):
     #             print(f"do round {i} right A")
 
 
-def searchCharac():
+def searchCharac(a, b):
+    print("search new charac", a, b)
+    return a + b
+
+
+def computeValid(a, b):
+    print("check abct...", a, b)
     return random.choice([True, False])
 
 
 def demo_mode2_sparx():
+    a = 10
+    b = 5
     try:
-        charac = searchCharac()
+        charac = searchCharac(a, b)
 
         if not charac:  # If charac is False, stop the loop
             print("no charac")
             return
 
         while True:
-            valid = searchCharac()
+
+            valid = computeValid(a, b)
+            print("charac= ", charac)
             if valid:
-                print("ok")
+                print("ok valid")
                 return
             else:
                 print("block")
+                a += 1
+                b += 2
+                charac = searchCharac(a, b)
     except Exception as e:
         print("Error occurred here...", e)
 
 
 def main():
-    demo_mode2_sparx()
+    test_sparx_round(6, 6)
 
 
 if __name__ == "__main__":

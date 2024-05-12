@@ -10,7 +10,7 @@ rounds: 18
 switchround: 18
 lowertrail: 18
 wordsize: 16
-mode: 7
+mode: 6
 fixedVariables:
 - X00: "0x8200"
 - X10: "0x0100"
@@ -29,6 +29,7 @@ fixedVariables:
 - X236: "0x0088"
 - X336: "0x0000"
 
+# for lower trail clustering
 # - X00: "0x0100"
 # - X10: "0x0001"
 # - X20: "0x8000"

@@ -60,8 +60,8 @@ def startsearch(tool_parameters):
         search.computeProbabilityOfDifferentials(cipher, tool_parameters)
     elif tool_parameters["mode"] == 5:
         boomerang.computeFeistelBoomerangDifferential(cipher, tool_parameters)
-    elif tool_parameters["mode"] == 7:
-        newBoom.findARXBoomerangDifferentialByMatchSwitch(cipher, tool_parameters)
+    elif tool_parameters["mode"] == 6:
+        newBoom.findValidARXBoomerangDifferential(cipher, tool_parameters)
     return
 
 
@@ -99,44 +99,26 @@ def loadparameters(args):
 
     params = {
         "cipher": "sparxroundBoom",
-        # "cipher": "chamBoom",
-        "rounds": 5,  # calculate by newBoom.py
-        "skipround": 99,  # for sparx
-        "switchround": 18,  # which #round to switch
-        "lowertrail": 10,  # Number of rounds for E1
-        "uweight": 0,  # Upper limit of weight for E0
-        "lweight": 0,  # Upper limit of weight for E1
-        "mode": 4,
+        "rounds": 5,  # will be determined by newBoom.py in mode 6
+        "switchround": 6,  # which #round to switch
+        "lowertrail": 7,  # Number of rounds for E1
+        "uweight": 0,
+        "lweight": 0,
+        "mode": 6,
         "wordsize": 16,
         "blocksize": 64,
-        "sweight": 30,
-        "endweight": 1000,  # set to the higher weight limit + 1 (e.g. if uweight is higher than lweight, set end weight to uweight+1)
+        "sweight": 0,
+        "endweight": 1000,
         "iterative": False,
         "boolector": False,
         "dot": None,
         "latex": None,
         "nummessages": 1,
         "timelimit": -1,
-        "fixedVariables": {
-            # "X00": "0x8200",
-            # "X10": "0x0100",
-            # "X20": "0x0001",
-            # "X30": "0x8000",
-            # "X017": "0x0400",
-            # "X117": "0x0004",
-            # "X217": "0x0502",
-            # "X317": "0x0088",
-        },
+        "fixedVariables": {},
         "boomerangVariables": {},  # for system use only
-        # ---- params for abct
         "lowerBoomerangVariables": {},
         "upperBoomerangVariables": {},
-        "lowerVariables": {
-            # user use to set fixed starting/ending for E1 trail search
-        },
-        "upperVariables": {
-            # user use to set fixed starting/ending for E0 trail search
-        },
         "blockedCharacteristics": [],
         "blockedUpperCharacteristics": [],
         "blockedLowerCharacteristics": [],
