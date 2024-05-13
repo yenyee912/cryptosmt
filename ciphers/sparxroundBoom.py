@@ -93,7 +93,7 @@ class SPARXRoundCipher(AbstractCipher):
             )
 
             for i in range(rounds):
-                if parameters["switchround"] == i+1:
+                if parameters["switchround"] == i+1: #skip round with linear layer
                     continue
 
                 if (i + 1) % self.rounds_per_step == 0:
@@ -130,7 +130,7 @@ class SPARXRoundCipher(AbstractCipher):
                         )
 
                 else:
-                    if (parameters["switchround"] + 1) == (i + 1):
+                    if (parameters["switchround"] + 1) == (i + 1): #skip specky round 
                         continue
                     else:
                     # do round function left (SPECKEY)

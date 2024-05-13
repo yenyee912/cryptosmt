@@ -2,15 +2,15 @@
 # for E1 clustering, the round number in fixed variables need adjusted from 0 to lowertrail round
 
 ---
-cipher: chamBoom
-sweight: 31
-endweight: 32
+cipher: cham
+sweight: 0
+endweight: 20
 # skipround: 99
-rounds: 18
+rounds: 17
 switchround: 18
 lowertrail: 18
 wordsize: 16
-mode: 6
+mode: 4
 fixedVariables:
 - X00: "0x8200"
 - X10: "0x0100"
@@ -20,20 +20,28 @@ fixedVariables:
 - X117: "0x0004"
 - X217: "0x0502"
 - X317: "0x0088"
-- X019: "0x0100"
-- X119: "0x0001"
-- X219: "0x8000"
-- X319: "0x0080"
-- X036: "0x0004"
-- X136: "0x0502"
-- X236: "0x0088"
-- X336: "0x0000"
+# - X019: "0x0100"
+# - X119: "0x0001"
+# - X219: "0x8000"
+# - X319: "0x0080"
+# - X036: "0x0004"
+# - X136: "0x0502"
+# - X236: "0x0088"
+# - X336: "0x0000"
 
 # for lower trail clustering
-# - X00: "0x0100"
-# - X10: "0x0001"
-# - X20: "0x8000"
-# - X30: "0x0080"
+# - X00: "0x0000"
+# - X10: "0x0000"
+# - X20: "0x0000"
+# - X30: "0x0000"
+# - X01: "0x0100"
+# - X11: "0x0001"
+# - X21: "0x8000"
+# - X31: "0x0080"
+# # - X00: "0x0100"
+# # - X10: "0x0001"
+# # - X20: "0x8000"
+# # - X30: "0x0080"
 # - X018: "0x0004"
 # - X118: "0x0502"
 # - X218: "0x0088"

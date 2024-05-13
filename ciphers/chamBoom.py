@@ -63,7 +63,9 @@ class CHAMCipher(AbstractCipher):
             rot_x0 = 0
             rot_x1 = 0
             for i in range(rounds):
-                if parameters["switchround"] == i:
+                if (parameters["switchround"] == i + 1) or (
+                    parameters["switchround"] + 1 == i + 1
+                ):
                     continue
                 else:
                     if ((i + 1) % 2) == 0:  # even rounds
