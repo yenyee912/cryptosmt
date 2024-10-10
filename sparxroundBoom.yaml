@@ -4,13 +4,13 @@ cipher: sparxroundBoom
 sweight: 0
 endweight: 32
 # skipround: 0
-rounds: 7
-switchround: 0
+rounds: 10
+switchround: 6
 lowertrail: 7
 wordsize: 16
-mode: 4
+mode: 6
 # timelimit: 360
-fixedVariables:
+# fixedVariables:
 # - X00: "0x0881"
 # - X10: "0x0205"
 # - Y00: "0x0000"
@@ -35,10 +35,10 @@ fixedVariables:
 # - X00: "0x0000"
 # - Y00: "0x0000"
 #7
-- X01: "0x0000"
-- X11: "0x0000"
-- Y01: "0x0A20"
-- Y11: "0x4205"
+# - X01: "0x8200"
+# - X11: "0x0100"
+# - Y01: "0x0001"
+# - Y11: "0x8000"
 #8
 # - Y01: "0x0211"
 # - Y11: "0x0A04"
@@ -47,8 +47,8 @@ fixedVariables:
 # - X05: "0x8300"
 # - Y05: "0x8100"
 # - Y15: "0x8102"
-- X07: "0x8000"
-- X17: "0x8C0A"
-- Y07: "0x8000"
-- Y17: "0x840A"
+# - X07: "0x8000"
+# - X17: "0x8C0A"
+# - Y07: "0x8000"
+# - Y17: "0x840A"
 ...

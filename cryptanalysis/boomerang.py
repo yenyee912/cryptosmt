@@ -6,22 +6,12 @@ Created on Oct 8, 2021
 
 from parser import parsesolveroutput, stpcommands
 from cryptanalysis import search
-from config import (
-    PATH_STP,
-    PATH_BOOLECTOR,
-    PATH_CRYPTOMINISAT,
-    MAX_WEIGHT,
-    MAX_CHARACTERISTICS,
-)
 
-import subprocess
-import random
 import math
 import os
 import time
 import sys
 
-from fractions import gcd
 
 
 def computeFeistelBoomerangDifferential(cipher, parameters):

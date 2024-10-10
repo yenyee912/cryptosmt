@@ -2,7 +2,7 @@
 # for E1 clustering, the round number in fixed variables need adjusted from 0 to lowertrail round
 
 ---
-cipher: cham
+cipher: chamBoom
 sweight: 0
 endweight: 20
 # skipround: 99
@@ -10,16 +10,16 @@ rounds: 17
 switchround: 18
 lowertrail: 18
 wordsize: 16
-mode: 4
-fixedVariables:
-- X00: "0x8200"
-- X10: "0x0100"
-- X20: "0x0001"
-- X30: "0x8000"
-- X017: "0x0400"
-- X117: "0x0004"
-- X217: "0x0502"
-- X317: "0x0088"
+mode: 6
+# fixedVariables:
+# - X00: "0x8200"
+# - X10: "0x0100"
+# - X20: "0x0001"
+# - X30: "0x8000"
+# - X017: "0x0400"
+# - X117: "0x0004"
+# - X217: "0x0502"
+# - X317: "0x0088"
 # - X019: "0x0100"
 # - X119: "0x0001"
 # - X219: "0x8000"

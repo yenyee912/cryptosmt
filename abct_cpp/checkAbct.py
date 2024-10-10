@@ -5,7 +5,7 @@ import time
 import random
 
 libname = pathlib.Path().absolute()
-c_lib = ctypes.CDLL(libname / "abct_cpp/abct_prob.o")
+c_lib = ctypes.CDLL(libname /"abct_cpp/abct_prob.o")
 c_lib.abct_prob.restype = ctypes.c_longdouble
 
 

@@ -29,12 +29,6 @@ def clean(c):
 
 
 @invoke.task()
-def test_abct(c):
-    print_banner("run the python call cpp script...")
-    invoke.run("python3 call_abct.py", pty=True)
-
-
-@invoke.task()
 def build_abct(c):
     print_banner("building C++ abct code")
     invoke.run(
@@ -46,7 +40,6 @@ def build_abct(c):
 @invoke.task(
     clean,
     build_abct,
-    test_abct,
 )
 def all(c):
     pass

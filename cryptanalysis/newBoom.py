@@ -20,8 +20,6 @@ import sys
 import pathlib
 import time
 
-from fractions import gcd
-
 
 def findValidARXBoomerangDifferential(cipher, parameters):
     if cipher.name == "chamBoom":
@@ -29,7 +27,7 @@ def findValidARXBoomerangDifferential(cipher, parameters):
     elif cipher.name == "sparxroundBoom" or cipher.name == "sparxround":
         searchSPARX(cipher, parameters)
     else:
-        print("Cipher not support mode 7, please check again.")
+        print("Cipher not support mode 6, please check again.")
 
 
 def searchSPARX(cipher, parameters):
@@ -66,23 +64,23 @@ def searchSPARX(cipher, parameters):
 
             lowerStartRound = switchRound + 1
             if lowerStartRound % 3 == 0:  # take the output from A2
-                left_delta = int(characteristic.getData()[switchRound][4], 16)
-                left_delta_prime = int(characteristic.getData()[switchRound][5], 16)
-                right_delta = int(characteristic.getData()[switchRound][6], 16)
-                right_delta_prime = int(characteristic.getData()[switchRound][7], 16)
+                left_gamma = int(characteristic.getData()[switchRound][4], 16)
+                left_gamma_prime = int(characteristic.getData()[switchRound][5], 16)
+                right_gamma = int(characteristic.getData()[switchRound][6], 16)
+                right_gamma_prime = int(characteristic.getData()[switchRound][7], 16)
             else:
-                left_delta = int(characteristic.getData()[lowerStartRound][0], 16)
-                left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
-                right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
-                right_delta_prime = int(
+                left_gamma = int(characteristic.getData()[lowerStartRound][0], 16)
+                left_gamma_prime = int(characteristic.getData()[lowerStartRound][1], 16)
+                right_gamma = int(characteristic.getData()[lowerStartRound][2], 16)
+                right_gamma_prime = int(
                     characteristic.getData()[lowerStartRound][3], 16
                 )
 
             lowerEndRound = switchRound + parameters["lowertrail"]
-            left_gamma = int(characteristic.getData()[lowerEndRound][0], 16)
-            left_gamma_prime = int(characteristic.getData()[lowerEndRound][1], 16)
-            right_gamma = int(characteristic.getData()[lowerEndRound][2], 16)
-            right_gamma_prime = int(characteristic.getData()[lowerEndRound][3], 16)
+            left_delta = int(characteristic.getData()[lowerEndRound][0], 16)
+            left_delta_prime = int(characteristic.getData()[lowerEndRound][1], 16)
+            right_delta = int(characteristic.getData()[lowerEndRound][2], 16)
+            right_delta_prime = int(characteristic.getData()[lowerEndRound][3], 16)
 
             parameters["upperBoomerangVariables"] = {
                 "X00": "0x" + format(left_alpha, "04x"),
@@ -96,14 +94,14 @@ def searchSPARX(cipher, parameters):
             }
 
             parameters["lowerBoomerangVariables"] = {
-                f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
-                f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
-                f"Y0{lowerStartRound}": "0x" + format(right_delta, "04x"),
-                f"Y1{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
-                f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
-                f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
-                f"Y0{lowerEndRound}": "0x" + format(right_gamma, "04x"),
-                f"Y1{lowerEndRound}": "0x" + format(right_gamma_prime, "04x"),
+                f"X0{lowerStartRound}": "0x" + format(left_gamma, "04x"),
+                f"X1{lowerStartRound}": "0x" + format(left_gamma_prime, "04x"),
+                f"Y0{lowerStartRound}": "0x" + format(right_gamma, "04x"),
+                f"Y1{lowerStartRound}": "0x" + format(right_gamma_prime, "04x"),
+                f"X0{lowerEndRound}": "0x" + format(left_delta, "04x"),
+                f"X1{lowerEndRound}": "0x" + format(left_delta_prime, "04x"),
+                f"Y0{lowerEndRound}": "0x" + format(right_delta, "04x"),
+                f"Y1{lowerEndRound}": "0x" + format(right_delta_prime, "04x"),
             }
 
             print("Obtaining characteristics for trail E0 and E1")
@@ -132,27 +130,27 @@ def searchSPARX(cipher, parameters):
             # to generate beta: X10= ROTL(X10,2) XOR X00
             # you have to decrypt to get ori beta in abct
             if lowerStartRound % 3 == 0:
-                temp = rotl((right_delta ^ right_delta_prime), 8)
-                tmpVar = left_delta
-                left_delta = right_delta
-                right_delta = tmpVar
+                temp = rotl((right_gamma ^ right_gamma_prime), 8)
+                tmpVar = left_gamma
+                left_gamma = right_gamma
+                right_gamma = tmpVar
 
-                tmpVar = left_delta_prime
-                left_delta_prime = right_delta_prime
-                right_delta_prime = tmpVar
+                tmpVar = left_gamma_prime
+                left_gamma_prime = right_gamma_prime
+                right_gamma_prime = tmpVar
 
-                right_delta_prime = right_delta_prime ^ temp ^ left_delta_prime
-                right_delta = right_delta ^ temp ^ left_delta
+                right_gamma_prime = right_gamma_prime ^ temp ^ left_gamma_prime
+                right_gamma = right_gamma ^ temp ^ left_gamma
 
-            left_delta_prime = rotl((left_delta ^ left_delta_prime), 14)
-            right_delta_prime = rotl((right_delta ^ right_delta_prime), 14)
+            left_gamma_prime = rotl((left_gamma ^ left_gamma_prime), 14)
+            right_gamma_prime = rotl((right_gamma ^ right_gamma_prime), 14)
 
             print(f"Matching the switch in Em(Round {switchRound})...")
             leftSwitchProb = checkAbct.check_abct_prob(
-                left_beta, left_beta_prime, left_delta, left_delta_prime
+                left_beta, left_beta_prime, left_gamma, left_gamma_prime
             )
             rightSwitchProb = checkAbct.check_abct_prob(
-                right_beta, right_beta_prime, right_delta, right_delta_prime
+                right_beta, right_beta_prime, right_gamma, right_gamma_prime
             )
 
             if leftSwitchProb != 0 and rightSwitchProb != 0:
@@ -220,16 +218,16 @@ def searchCHAM(cipher, parameters):
             right_beta_prime = int(characteristic.getData()[upperEndRound][3], 16)
 
             lowerStartRound = switchRound + 1
-            left_delta = int(characteristic.getData()[lowerStartRound][0], 16)
-            left_delta_prime = int(characteristic.getData()[lowerStartRound][1], 16)
-            right_delta = int(characteristic.getData()[lowerStartRound][2], 16)
-            right_delta_prime = int(characteristic.getData()[lowerStartRound][3], 16)
+            left_gamma = int(characteristic.getData()[lowerStartRound][0], 16)
+            left_gamma_prime = int(characteristic.getData()[lowerStartRound][1], 16)
+            right_gamma = int(characteristic.getData()[lowerStartRound][2], 16)
+            right_gamma_prime = int(characteristic.getData()[lowerStartRound][3], 16)
 
             lowerEndRound = switchRound + parameters["lowertrail"]
-            left_gamma = int(characteristic.getData()[lowerEndRound][0], 16)
-            left_gamma_prime = int(characteristic.getData()[lowerEndRound][1], 16)
-            right_gamma = int(characteristic.getData()[lowerEndRound][2], 16)
-            right_gamma_prime = int(characteristic.getData()[lowerEndRound][3], 16)
+            left_delta = int(characteristic.getData()[lowerEndRound][0], 16)
+            left_delta_prime = int(characteristic.getData()[lowerEndRound][1], 16)
+            right_delta = int(characteristic.getData()[lowerEndRound][2], 16)
+            right_delta_prime = int(characteristic.getData()[lowerEndRound][3], 16)
 
             parameters["upperBoomerangVariables"] = {
                 "X00": "0x" + format(left_alpha, "04x"),
@@ -244,14 +242,14 @@ def searchCHAM(cipher, parameters):
 
             # could be x0A, edit later
             parameters["lowerBoomerangVariables"] = {
-                f"X0{lowerStartRound}": "0x" + format(left_delta, "04x"),
-                f"X1{lowerStartRound}": "0x" + format(left_delta_prime, "04x"),
-                f"X2{lowerStartRound}": "0x" + format(right_delta, "04x"),
-                f"X3{lowerStartRound}": "0x" + format(right_delta_prime, "04x"),
-                f"X0{lowerEndRound}": "0x" + format(left_gamma, "04x"),
-                f"X1{lowerEndRound}": "0x" + format(left_gamma_prime, "04x"),
-                f"X2{lowerEndRound}": "0x" + format(right_gamma, "04x"),
-                f"X3{lowerEndRound}": "0x" + format(right_gamma_prime, "04x"),
+                f"X0{lowerStartRound}": "0x" + format(left_gamma, "04x"),
+                f"X1{lowerStartRound}": "0x" + format(left_gamma_prime, "04x"),
+                f"X2{lowerStartRound}": "0x" + format(right_gamma, "04x"),
+                f"X3{lowerStartRound}": "0x" + format(right_gamma_prime, "04x"),
+                f"X0{lowerEndRound}": "0x" + format(left_delta, "04x"),
+                f"X1{lowerEndRound}": "0x" + format(left_delta_prime, "04x"),
+                f"X2{lowerEndRound}": "0x" + format(right_delta, "04x"),
+                f"X3{lowerEndRound}": "0x" + format(right_delta_prime, "04x"),
             }
 
             print("Obtaining characteristics for trail E0 and E1")
@@ -274,23 +272,23 @@ def searchCHAM(cipher, parameters):
             if switchRound % 2 == 0:
                 left_beta_prime = rotl(left_beta_prime, 1)
                 right_beta_prime = rotl(right_beta_prime, 1)
-                left_delta = rotl(left_delta, 8)
-                right_delta = rotl(right_delta, 8)
+                left_gamma = rotl(left_gamma, 8)
+                right_gamma = rotl(right_gamma, 8)
 
             else:
                 left_beta_prime = rotl(left_beta_prime, 8)
                 right_beta_prime = rotl(right_beta_prime, 8)
-                left_delta = rotl(left_delta, 15)
-                right_delta = rotl(right_delta, 15)
+                left_gamma = rotl(left_gamma, 15)
+                right_gamma = rotl(right_gamma, 15)
 
             print(f"Matching the switch in Em(Round {switchRound})...")
             # leftSwitchProb = 1.0
             leftSwitchProb = checkAbct.check_abct_prob(
-                left_beta, left_beta_prime, left_delta, left_delta_prime
+                left_beta, left_beta_prime, left_gamma, left_gamma_prime
             )
             # rightSwitchProb = 0.5
             rightSwitchProb = checkAbct.check_abct_prob(
-                right_beta, right_beta_prime, right_delta, right_delta_prime
+                right_beta, right_beta_prime, right_gamma, right_gamma_prime
             )
             if leftSwitchProb != 0 and rightSwitchProb != 0:
                 totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb, 2))
