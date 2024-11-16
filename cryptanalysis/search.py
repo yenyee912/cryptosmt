@@ -32,10 +32,11 @@ def computeProbabilityOfDifferentials(cipher, parameters):
     sat_logfile = "tmp/satlog{}.tmp".format(rnd_string_tmp)
 
     start_time = time.time()
+    print(parameters["rounds"], parameters["fixedVariables"])
 
     while (
         not reachedTimelimit(start_time, parameters["timelimit"])
-        and parameters["sweight"] < MAX_WEIGHT
+        and parameters["sweight"] <= parameters["endweight"]
     ):
 
         if os.path.isfile(sat_logfile):
@@ -155,7 +156,7 @@ def findMinWeightCharacteristic(cipher, parameters):
 
     while (
         not reachedTimelimit(start_time, parameters["timelimit"])
-        and parameters["sweight"] < MAX_WEIGHT
+        and parameters["sweight"] <= parameters["endweight"]
     ):
 
         print(

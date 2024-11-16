@@ -38,9 +38,7 @@ def searchSPARX(cipher, parameters):
 
     try:
         characteristic = searchDifferentialTrail(
-            cipher,
-            parameters,
-            startTime,
+            cipher, parameters, startTime, parameters["endweight"]
         )
         if not characteristic:
             print(
@@ -63,7 +61,7 @@ def searchSPARX(cipher, parameters):
             right_beta_prime = int(characteristic.getData()[upperEndRound][3], 16)
 
             lowerStartRound = switchRound + 1
-            if lowerStartRound % 3 == 0:  # take the output from A2
+            if lowerStartRound % 3 == 0:
                 left_gamma = int(characteristic.getData()[switchRound][4], 16)
                 left_gamma_prime = int(characteristic.getData()[switchRound][5], 16)
                 right_gamma = int(characteristic.getData()[switchRound][6], 16)
@@ -107,16 +105,16 @@ def searchSPARX(cipher, parameters):
             print("Obtaining characteristics for trail E0 and E1")
             keyList = list(parameters["upperBoomerangVariables"].keys())
             print(
-                f"Upper trail(E0): {keyList[4]}:{parameters['upperBoomerangVariables'][keyList[4]]},"
-                f"{keyList[5]}:{parameters['upperBoomerangVariables'][keyList[5]]} | "
-                f"{keyList[6]}:{parameters['upperBoomerangVariables'][keyList[6]]}, "
+                f"Upper trail(E0): {keyList[4]}:{parameters['upperBoomerangVariables'][keyList[4]]}, "
+                f"{keyList[5]}: {parameters['upperBoomerangVariables'][keyList[5]]} | "
+                f"{keyList[6]}: {parameters['upperBoomerangVariables'][keyList[6]]}, "
                 f"{keyList[7]}: {parameters['upperBoomerangVariables'][keyList[7]]}"
             )
             keyList2 = list(parameters["lowerBoomerangVariables"].keys())
             print(
-                f"Lower trail(E1): {keyList2[0]}:{parameters['lowerBoomerangVariables'][keyList2[0]]},"
+                f"Lower trail(E1): {keyList2[0]}:{parameters['lowerBoomerangVariables'][keyList2[0]]}, "
                 f"{keyList2[1]}: {parameters['lowerBoomerangVariables'][keyList2[1]]} | "
-                f"{keyList2[2]}:{parameters['lowerBoomerangVariables'][keyList2[2]]},"
+                f"{keyList2[2]}: {parameters['lowerBoomerangVariables'][keyList2[2]]}, "
                 f"{keyList2[3]}: {parameters['lowerBoomerangVariables'][keyList2[3]]}"
             )
             print("Rotating inputs...")
@@ -145,7 +143,7 @@ def searchSPARX(cipher, parameters):
             left_gamma_prime = rotl((left_gamma ^ left_gamma_prime), 14)
             right_gamma_prime = rotl((right_gamma ^ right_gamma_prime), 14)
 
-            print(f"Matching the switch in Em(Round {switchRound})...")
+            print(f"Matching the switch in Em (Round {switchRound})...")
             leftSwitchProb = checkAbct.check_abct_prob(
                 left_beta, left_beta_prime, left_gamma, left_gamma_prime
             )
@@ -157,7 +155,7 @@ def searchSPARX(cipher, parameters):
                 totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb, 2))
                 totalWeight = (parameters["sweight"] * 2) + totalSwitchWeight
                 print("---")
-                print("Total Weight: ", totalWeight)
+                print("Total Weight:", totalWeight)
                 print("---")
                 print(
                     f"{upperEndRound} rounds uppertrail: \n{parameters['upperBoomerangVariables']}"
@@ -172,14 +170,12 @@ def searchSPARX(cipher, parameters):
                 print("Either side of the switch is INVALID. Try again")
                 # block characteristics, try other trail
                 parameters["blockedCharacteristics"].append(characteristic)
-                parameters["fixedVariables"].clear()
+                # parameters["fixedVariables"].clear()
                 # parameters["fixedVariables"] = parameters["upperBoomerangVariables"]
                 print("\n---\n")
                 print(f"Looking for No. {repCount} trail...\n")
                 characteristic = searchDifferentialTrail(
-                    cipher,
-                    parameters,
-                    startTime,
+                    cipher, parameters, startTime, parameters["endweight"]
                 )
 
     except Exception as e:
@@ -194,9 +190,7 @@ def searchCHAM(cipher, parameters):
 
     try:
         characteristic = searchDifferentialTrail(
-            cipher,
-            parameters,
-            startTime,
+            cipher, parameters, startTime, parameters["endweight"]
         )
         if not characteristic:
             print(
@@ -270,18 +264,20 @@ def searchCHAM(cipher, parameters):
             print("Rotating inputs...")
             # need to rotate the input(for display as the smt ady added the constraints)
             if switchRound % 2 == 0:
+                # odd round
                 left_beta_prime = rotl(left_beta_prime, 1)
                 right_beta_prime = rotl(right_beta_prime, 1)
                 left_gamma = rotl(left_gamma, 8)
                 right_gamma = rotl(right_gamma, 8)
 
             else:
+                # even round
                 left_beta_prime = rotl(left_beta_prime, 8)
                 right_beta_prime = rotl(right_beta_prime, 8)
                 left_gamma = rotl(left_gamma, 15)
                 right_gamma = rotl(right_gamma, 15)
 
-            print(f"Matching the switch in Em(Round {switchRound})...")
+            print(f"Matching the switch in Em (Round {switchRound})...")
             # leftSwitchProb = 1.0
             leftSwitchProb = checkAbct.check_abct_prob(
                 left_beta, left_beta_prime, left_gamma, left_gamma_prime
@@ -300,7 +296,7 @@ def searchCHAM(cipher, parameters):
                 totalSwitchWeight = abs(math.log(leftSwitchProb * rightSwitchProb, 2))
                 totalWeight = (parameters["sweight"] * 2) + totalSwitchWeight
                 print("---")
-                print("Total Weight: ", totalWeight)
+                print("Total Weight:", totalWeight)
                 print("---")
                 print(
                     f"{upperEndRound} rounds uppertrail: \n{parameters['upperBoomerangVariables']}"
@@ -320,15 +316,13 @@ def searchCHAM(cipher, parameters):
                 print("\n---\n")
                 print(f"Looking for No. {repCount} trail...\n")
                 characteristic = searchDifferentialTrail(
-                    cipher,
-                    parameters,
-                    startTime,
+                    cipher, parameters, startTime, parameters["endweight"]
                 )
     except Exception as e:
         print("Error occured here...", e)
 
 
-def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
+def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit):
     """
     Search top or bottom trail (characteristic) of a boomerang
     modify from search.findMinWeightCharacteristic and boomerang.boomerangTrail
@@ -381,7 +375,7 @@ def searchDifferentialTrail(cipher, parameters, timestamp, searchLimit=32):
             print("---")
             print(
                 (
-                    "Boomerang(complete) trail for {} - Rounds {} -Switch {} - Wordsize {} - "
+                    "Boomerang trail for {} - Rounds {} - Switch {} - Wordsize {} - "
                     "Weight {} - Time {}s".format(
                         cipher.name,
                         parameters["rounds"],
