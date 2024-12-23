@@ -311,7 +311,7 @@ def searchCHAM(cipher, parameters):
                 print("Either side of the switch is INVALID. Try again")
                 # block characteristics, try other trail
                 parameters["blockedCharacteristics"].append(characteristic)
-                parameters["fixedVariables"].clear()
+                # parameters["fixedVariables"].clear()
                 # parameters["fixedVariables"] = parameters["upperBoomerangVariables"]
                 print("\n---\n")
                 print(f"Looking for No. {repCount} trail...\n")
