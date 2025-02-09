@@ -110,17 +110,17 @@ class CHAMCipher(AbstractCipher):
                 upperEndRound = switchRound - 1  # round of E0 outputDiff
                 lowerStartRound = switchRound + 1
 
-                self.setupSwitchConstraints(
-                    stp_file,
-                    upperEndRound,
-                    switchRound,
-                    lowerStartRound,
-                    0x4,
-                    0x5,
-                )
-                # self.setupFixedSwitchConstraints(
-                #     stp_file, upperEndRound, switchRound, lowerStartRound
+                # self.setupSwitchConstraints(
+                #     stp_file,
+                #     upperEndRound,
+                #     switchRound,
+                #     lowerStartRound,
+                #     0x0,
+                #     0x2,
                 # )
+                self.setupFixedSwitchConstraints(
+                    stp_file, upperEndRound, switchRound, lowerStartRound
+                )
             stpcommands.setupQuery(stp_file)
 
         return
@@ -185,25 +185,31 @@ class CHAMCipher(AbstractCipher):
         if switchRound % 2 == 0:
             # odd design:
             stp_file.write(
-                # decryption,  ok
+                # 4,5
                 f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000100);\n"
                 f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b1000000000000010);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000100);\n"
-                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b1000000000000010);\n"
-                # encryption, ok
+                # 0,8
+                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b0000000000000100);\n"
+                # 4,5
                 f"ASSERT((X0{lowerStartRound} & 0b0000000100000000)= (X1{lowerStartRound} & 0b0000000000000001));\n"
-                f"ASSERT((X2{lowerStartRound} & 0b0000000100000000)= (X3{lowerStartRound} & 0b0000000000000001));\n"
+                # 0,8
+                f"ASSERT((X2{lowerStartRound} & 0b0000100000000000)= (X3{lowerStartRound} & 0b0000000000001000));\n"
             )
 
         else:
             # even design
             stp_file.write(
+                # 4,5
                 f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000100);\n"
                 f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000010100000000);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000100);\n"
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000010100000000);\n"
+                # 0,8
+                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000100000000000);\n"
+                # 4,5
                 f"ASSERT((X0{lowerStartRound} & 0b0000000000000100)= (X1{lowerStartRound} & 0b0000000000000001));\n"
-                f"ASSERT((X2{lowerStartRound} & 0b0000000000000100)= (X3{lowerStartRound} & 0b0000000000000001));\n"
+                # 0,8
+                f"ASSERT((X2{lowerStartRound} & 0b0000000000010000) = (X3{lowerStartRound} & 0b0000000000001000));\n"
             )
 
     def zero2switch(self, stp_file, upperEndRound, switchRound, lowerStartRound):
@@ -213,6 +219,7 @@ class CHAMCipher(AbstractCipher):
         - 0,2,x,x
         - conclusion: basically check 2nd LSB of c is === to 2nd LSB of d
         """
+        print("i am hererer")
         if switchRound % 2 == 0:
             # odd design:
             stp_file.write(
@@ -314,7 +321,7 @@ class CHAMCipher(AbstractCipher):
         stp_file.write(
             f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|X2{upperEndRound}|X3{upperEndRound}) = 0b0000000000000000);\n"
             f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = 0b0000000000000000);\n"
-            f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = ~0b0000000000000000);\n"
+            # f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = ~0b0000000000000000);\n"
             # f"ASSERT(BVLE(BVPLUS(16, (X0{lowerStartRound} = 0b0000000000000000), (X1{lowerStartRound} = 0b0000000000000000), (X2{lowerStartRound} = 0b0000000000000000), (X3{lowerStartRound} = 0b0000000000000000)),0b0000000000000001));\n"
             # f"ASSERT(BVPLUS(16, (X0{lowerStartRound} = 0b1111111111111111), (X1{lowerStartRound} = 0b1111111111111111), (X2{lowerStartRound} = 0b1111111111111111), (X3{lowerStartRound} = 0b1111111111111111)) <= 0b0000000000000001);\n"
         )
@@ -354,3 +361,10 @@ class CHAMCipher(AbstractCipher):
                 # 2,0
                 f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000000000000010),(X3{lowerStartRound}&0b0000000000000011)) = 0b0000000000000010)); \n"
             )
+        stp_file.write(
+            f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|X2{upperEndRound}|X3{upperEndRound}) = 0b0000000000000000);\n"
+            f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = 0b0000000000000000);\n"
+            f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = ~0b0000000000000000);\n"
+            # f"ASSERT(BVLE(BVPLUS(16, (X0{lowerStartRound} = 0b0000000000000000), (X1{lowerStartRound} = 0b0000000000000000), (X2{lowerStartRound} = 0b0000000000000000), (X3{lowerStartRound} = 0b0000000000000000)),0b0000000000000001));\n"
+            # f"ASSERT(BVPLUS(16, (X0{lowerStartRound} = 0b1111111111111111), (X1{lowerStartRound} = 0b1111111111111111), (X2{lowerStartRound} = 0b1111111111111111), (X3{lowerStartRound} = 0b1111111111111111)) <= 0b0000000000000001);\n"
+        )
