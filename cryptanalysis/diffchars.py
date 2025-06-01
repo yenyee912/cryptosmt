@@ -105,6 +105,59 @@ class DifferentialCharacteristic(object):
         print("Weight: " + str(int(self.weight, 16)))
         return
 
+    # for sparx only
+    def printSparxText(self, params):
+        """
+        Prints a table from the data structure.
+        """
+        header = []
+        data = self.getData()
+        skipRound = params["skipround"]
+        resetRound = False
+
+        # Get header
+        for word in self.print_format:
+            header.append(word)
+
+        # Print everthing
+        col_width = max(len(s) for s in list(itertools.chain.from_iterable(data))) + 2
+        header_str = "Rounds\t"
+        data_str = ""
+        current_row = 0
+        for entry in header:
+            header_str += entry.ljust(col_width)
+        for row_idx, row in enumerate(data):
+            if skipRound != 99:
+                if row_idx <= skipRound:
+                    data_str += "\t"  # empty row number before skipRound
+                else:
+                    data_str += str(current_row) + "\t"
+                    current_row += 1
+            else:
+                data_str += (
+                    str(row_idx) + "\t"
+                )  # normal row numbering if skipRound is 99
+
+            for entry in row:
+                data_str += entry.ljust(col_width)
+            data_str += "\n"
+
+        # if params["skipround"] == 2:
+        #     print("Weight: " + str(int(self.weight, 16)) - 10)
+
+        skipWeight = 0
+        if not skipRound == 99:
+            for row in data[: (skipRound + 1)]:
+                skipWeight += abs(int(row[10]) + int(row[11]))
+        print(skipWeight)
+
+        print(header_str)
+        print("-" * len(header_str))
+        print(data_str)
+        self.weight = int(self.weight, 16) - skipWeight
+        print("Weight: ", self.weight)
+        return
+
     def getDOTString(self):
         """
         Get the trail in .dot compatible format.
@@ -199,9 +252,3 @@ class DifferentialCharacteristic(object):
             return False
         else:
             return True
-
-    def getWeightPerSparxRound(self):
-
-        data = self.getData()
-
-        print(data)

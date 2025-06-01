@@ -168,6 +168,20 @@ class SPARXRoundCipher(AbstractCipher):
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 
+            # stp_file.write(
+            #     f"ASSERT((X07 & 0b0000000100000000) = 0b0000000000000000);\n"
+            #     f"ASSERT((X17 & 0b0000000000001111) = 0b0000000000000010);\n"
+            #     # f"ASSERT(NOT(BVXOR((X01 & 0b0000000000000011), (BVXOR(X01, X11) & 0b0000000000000100)) = 0b0000000000000010));\n"
+            #     # f"ASSERT((X07 & 0b0000000000000010) =  ((BVXOR(X01, X11) & 0b0000000000001000)));\n"
+            #     # f"ASSERT((Y01 & 0b0000000000000010) =  ((BVXOR(Y01, Y11) & 0b0000000000001000)));\n"
+            #     # f"ASSERT(NOT ( X00 | X10 | Y00 | Y10   ) = 0b0000000000000000);\n"
+            #     # f"ASSERT(NOT ( X01 | X11 | Y01 | Y11   ) = 0b0000000000000000);\n"
+            #     # f"ASSERT(NOT( Y01 = 0x0a60));\n"
+            #     # f"ASSERT(NOT( Y01 = 0x0a20));\n"
+            #     # "ASSERT(NOT( BVXOR(Y01, 0x0A60) | BVXOR(Y11, 0x4205) | BVXOR(Y01, 0x0A20) )= 0hex0000);\n"
+            #     # "ASSERT(NOT(BVXOR(X01, 0x840A) | BVXOR(X11, 0x0000) | BVXOR(Y01, 0x8000) | BVXOR(Y11, 0x0000)= 0hex0000);"
+            # )
+
             stpcommands.setupQuery(stp_file)
 
         return

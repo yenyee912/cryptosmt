@@ -23,7 +23,7 @@ class CHAMCipher(AbstractCipher):
         """
         Returns the print format.
         """
-        return ["X0", "X1", "X2", "X3", "X0X1", "w"]
+        return ["X0", "X1", "X2", "X3", "w"]
 
     def createSTP(self, stp_filename, parameters):
         """
@@ -61,10 +61,12 @@ class CHAMCipher(AbstractCipher):
             rot_x0 = 0
             rot_x1 = 0
             for i in range(rounds):
-                if parameters["switchround"] == i or parameters["switchround"] - 1 == i:
+                if (
+                    i == parameters["switchround"] - 1
+                ):  # checked, compared with stp for single trail, the weight of -1 and SR should be eliminated
                     continue
                 else:
-                    if ((i + 1) % 2) == 0:  # even rounds
+                    if ((i + 1) % 2) == 0:  # if next round is even rounds
                         rot_x1 = 8
                         rot_x0 = 1
                     else:  # odd rounds
@@ -105,22 +107,18 @@ class CHAMCipher(AbstractCipher):
             for char in parameters["blockedCharacteristics"]:
                 stpcommands.blockCharacteristic(stp_file, char, wordsize)
 
-            if parameters["switchround"] > 0:
-                switchRound = parameters["switchround"]
-                upperEndRound = switchRound - 1  # round of E0 outputDiff
-                lowerStartRound = switchRound + 1
+            switchRound = parameters["switchround"]
+            upperEndRound = parameters["uppertrail"]  # round of E0 outputDiff
+            lowerStartRound = switchRound
+            self.setupSwitchConstraints(
+                stp_file, upperEndRound, switchRound, lowerStartRound, 0x0, 0x2
+            )
 
-                # self.setupSwitchConstraints(
-                #     stp_file,
-                #     upperEndRound,
-                #     switchRound,
-                #     lowerStartRound,
-                #     0x0,
-                #     0x2,
-                # )
-                self.setupFixedSwitchConstraints(
-                    stp_file, upperEndRound, switchRound, lowerStartRound
-                )
+            stpcommands.blockBoomerangVariable(stp_file, parameters, wordsize)
+
+            # dont use this first, all wrong
+            # self.setupFixedSwitchConstraints(stp_file, upperEndRound, lowerStartRound)
+
             stpcommands.setupQuery(stp_file)
 
         return
@@ -175,26 +173,138 @@ class CHAMCipher(AbstractCipher):
         stp_file.write(command)
         return
 
-    def four5switch(self, stp_file, upperEndRound, switchRound, lowerStartRound):
+    def setupSwitchConstraints(
+        self, stp_file, upperEndRound, switchRound, lowerStartRound, a, b, part="upper"
+    ):
+
+        if a == 0x4 and b == 0x5:  # for liyu's paper
+            self.four5switch(stp_file, upperEndRound, lowerStartRound)
+        elif a == 0x0 and b == 0x2:
+            self.zero2switch(stp_file, upperEndRound, lowerStartRound)
+        elif a == 0x0 and b == 0x1:
+            self.zero1switch(stp_file, upperEndRound, lowerStartRound)
+        elif a == 0x2 and b == 0x2:
+            self.two2switch(stp_file, upperEndRound, lowerStartRound)
+
+        stp_file.write(
+            f"ASSERT(NOT ( X0{upperEndRound} | X1{upperEndRound} | X3{lowerStartRound} | X0{lowerStartRound}   ) = 0b0000000000000000);\n"
+            f"ASSERT(NOT ( X0{lowerStartRound} | X1{lowerStartRound} | X2{lowerStartRound} | X3{lowerStartRound}   ) = 0b0000000000000000);\n"
+            f"ASSERT(NOT ( X00 | X10 | X20 | X30   ) = 0b0000000000000000);\n"
+        )
+
+    def zero2switch(self, stp_file, upperEndRound, lowerStartRound):
+        """
+        - this function is designed for coded switch constraints for ABCT
+        - the clauses are served for single switch pattern only
+        - 0,2,x,x
+        - conclusion: basically check 2nd LSB of c is === to 2nd LSB of d
+        """
+        if upperEndRound % 2 == 0:
+            # switch= odd, use even design-->L1,R8,L1, ok checked
+            stp_file.write(
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"  # no rot
+                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b0000000000000001);\n"  # L1 (reverse=R1)
+                f"ASSERT((X3{lowerStartRound} & 0b0000001000000000)= (X0{lowerStartRound} & 0b0000000000000001));\n"
+            )
+
+        else:
+            # switch= even, use odd design--> L8,R1,L8
+            stp_file.write(
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"  # no rot
+                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"  # R8
+                f"ASSERT((X3{lowerStartRound} & 0b0000000000000100) = (X0{lowerStartRound} & 0b0000001000000000));\n"
+            )
+
+    def two2switch(self, stp_file, upperEndRound, lowerStartRound):
+        """
+        - this function is designed for coded switch constraints for ABCT
+        - the clauses are served for single switch pattern only
+        - 2, 2 x, x
+        """
+        if upperEndRound % 2 == 0:
+            # switch= odd, use even design-->L1,R8,L1, ok checked
+            stp_file.write(
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"  # no rot
+                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b0000000000000001);\n"
+                f"ASSERT(NOT(BVXOR((X3{lowerStartRound}&0b0000001100000000), (X0{lowerStartRound}&0b1000000000000000)) = 0b0000000000000010));\n"
+            )
+
+        else:
+            # switch= even, use odd design--> L8,R1,L8
+            stp_file.write(
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
+                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
+                f"ASSERT(NOT(BVXOR((X3{lowerStartRound}&0b0000000000000110), (X0{lowerStartRound}&0b0000000100000000)) = 0b0000000000000010));\n"
+            )
+
+    def zero1switch(self, stp_file, upperEndRound, lowerStartRound):
+        """
+        - this function is designed for coded switch constraints for ABCT
+        - the clauses are served for single switch pattern only
+        - 0,1,x,x
+        """
+        if upperEndRound % 2 == 0:
+            # switch= odd, use even design-->L1,R8,L1, ok checked
+            stp_file.write(
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b1000000000000000);\n"
+                f"ASSERT((X3{lowerStartRound} & 0b0000000100000000)= (X0{lowerStartRound} & 0b1000000000000000));\n"
+            )
+        else:
+            # switch= even, use odd design--> L8,R1,L8
+            stp_file.write(
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000000100000000);\n"
+                f"ASSERT((X3{lowerStartRound} & 0b0000000000000010) = (X0{lowerStartRound} & 0b0000000100000000));\n"
+            )
+
+    # so far ok, because e0 trail from author is alpha=0, alpha'=0
+    def setupFixedSwitchConstraints(self, stp_file, upperEndRound, lowerStartRound):
+        """
+        - this function is designed for coded switch constraints for ABCT
+        - the clauses are served for single switch pattern only
+        - for the E_0 trail, 0,0,x,x
+        """
+        if upperEndRound % 2 == 0:  # use even round setting
+            stp_file.write(
+                # 0,8
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b0000000000000100);\n"
+                # 0,8 --> check 4th bit of c== 4th bit of d
+                f"ASSERT((X3{lowerStartRound} & 0b0000100000000000)= (X0{lowerStartRound} & 0b0000000000001000));\n"
+            )
+
+        else:
+            stp_file.write(
+                # 0,8
+                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
+                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000100000000000);\n"
+                f"ASSERT((X3{lowerStartRound} & 0b0000000000010000) = (X0{lowerStartRound} & 0b0000000000001000));\n"
+            )
+
+        stp_file.write(
+            f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}) = 0b0000000000000000);\n"
+            f"ASSERT(NOT(X0{lowerStartRound}|X3{lowerStartRound}) = 0b0000000000000000);\n"
+            # f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = ~0b0000000000000000);\n"
+            # f"ASSERT(BVLE(BVPLUS(16, (X0{lowerStartRound} = 0b0000000000000000), (X1{lowerStartRound} = 0b0000000000000000), (X2{lowerStartRound} = 0b0000000000000000), (X3{lowerStartRound} = 0b0000000000000000)),0b0000000000000001));\n"
+            # f"ASSERT(BVPLUS(16, (X0{lowerStartRound} = 0b1111111111111111), (X1{lowerStartRound} = 0b1111111111111111), (X2{lowerStartRound} = 0b1111111111111111), (X3{lowerStartRound} = 0b1111111111111111)) <= 0b0000000000000001);\n"
+        )
+
+    def four5switch(self, stp_file, upperEndRound, switchRound, lowerStartRound, part):
         """
         - this function is designed for coded switch constraints for ABCT
         - the clauses are served for single switch pattern only
         - 4,5,x,x
         - conclusion: basically check 3rd bits of c is === to 3rd bits of d
         """
-        if switchRound % 2 == 0:
+        if upperEndRound % 2 == 0:
             # odd design:
             stp_file.write(
                 # 4,5
                 f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000100);\n"
                 f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b1000000000000010);\n"
-                # 0,8
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b0000000000000100);\n"
                 # 4,5
                 f"ASSERT((X0{lowerStartRound} & 0b0000000100000000)= (X1{lowerStartRound} & 0b0000000000000001));\n"
-                # 0,8
-                f"ASSERT((X2{lowerStartRound} & 0b0000100000000000)= (X3{lowerStartRound} & 0b0000000000001000));\n"
             )
 
         else:
@@ -203,168 +313,6 @@ class CHAMCipher(AbstractCipher):
                 # 4,5
                 f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000100);\n"
                 f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000010100000000);\n"
-                # 0,8
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000100000000000);\n"
                 # 4,5
                 f"ASSERT((X0{lowerStartRound} & 0b0000000000000100)= (X1{lowerStartRound} & 0b0000000000000001));\n"
-                # 0,8
-                f"ASSERT((X2{lowerStartRound} & 0b0000000000010000) = (X3{lowerStartRound} & 0b0000000000001000));\n"
             )
-
-    def zero2switch(self, stp_file, upperEndRound, switchRound, lowerStartRound):
-        """
-        - this function is designed for coded switch constraints for ABCT
-        - the clauses are served for single switch pattern only
-        - 0,2,x,x
-        - conclusion: basically check 2nd LSB of c is === to 2nd LSB of d
-        """
-        print("i am hererer")
-        if switchRound % 2 == 0:
-            # odd design:
-            stp_file.write(
-                # decryption,  ok
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b0000000000000001);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b0000000000000001);\n"
-                # encryption, ok
-                f"ASSERT((X0{lowerStartRound} & 0b0000001000000000)= (X1{lowerStartRound} & 0b0000000000000010));\n"
-                f"ASSERT((X2{lowerStartRound} & 0b0000001000000000)= (X3{lowerStartRound} & 0b0000000000000010));\n"
-            )
-
-        else:
-            # even design
-            stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
-                f"ASSERT((X0{lowerStartRound} & 0b0000000000000100) = (X1{lowerStartRound} & 0b0000000000000010));\n"
-                f"ASSERT((X2{lowerStartRound} & 0b0000000000000100) = (X3{lowerStartRound} & 0b0000000000000010));\n"
-            )
-
-    def two2switch(self, stp_file, upperEndRound, switchRound, lowerStartRound):
-        """
-        - this function is designed for coded switch constraints for ABCT
-        - the clauses are served for single switch pattern only
-        - 2, 2 x, x
-        """
-        if switchRound % 2 == 0:
-            stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b0000000000000001);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b0000000000000001);\n"
-            )
-            stp_file.write(
-                f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000001100000000), (X1{lowerStartRound}&0b0000000000000010)) = 0b0000001000000000));\n"
-                f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000001100000000), (X3{lowerStartRound}&0b0000000000000010)) = 0b0000001000000000));\n"
-            )
-
-        else:
-            stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000001000000000);\n"
-            )
-            stp_file.write(
-                f"ASSERT(NOT(BVXOR((X0{lowerStartRound}&0b0000000000000110), (X1{lowerStartRound}&0b0000000000000001)) = 0b0000000000000100));\n"
-                f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000000000000110), (X3{lowerStartRound}&0b0000000000000001)) = 0b0000000000000100));\n"
-            )
-
-        stp_file.write(
-            f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|X2{upperEndRound}|X3{upperEndRound}) = 0b0000000000000000);\n"
-            f"ASSERT(NOT(X0{lowerStartRound}|X1{lowerStartRound}|X2{lowerStartRound}|X3{lowerStartRound}) = 0b0000000000000000);\n"
-        )
-
-    def zero1switch(self, stp_file, upperEndRound, switchRound, lowerStartRound):
-        """
-        - this function is designed for coded switch constraints for ABCT
-        - the clauses are served for single switch pattern only
-        - 0,1,x,x
-        """
-        if switchRound % 2 == 0:
-            stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b1000000000000000);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b1000000000000000);\n"
-                f"ASSERT((X0{lowerStartRound} & 0b0000000100000000) = (X1{lowerStartRound} & 0b0000000000000001));\n"
-                f"ASSERT((X2{lowerStartRound} & 0b0000000100000000) = (X3{lowerStartRound} & 0b0000000000000001));\n"
-            )
-
-        else:
-            stp_file.write(
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000000100000000);\n"
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000000100000000);\n"
-                f"ASSERT((X0{lowerStartRound} & 0b0000000000000010)= (X1{lowerStartRound} & 0b0000000000000001));\n"
-                f"ASSERT((X2{lowerStartRound} & 0b0000000000000010)= (X3{lowerStartRound} & 0b0000000000000001));\n"
-            )
-
-    def setupSwitchConstraints(
-        self, stp_file, upperEndRound, switchRound, lowerStartRound, a, b
-    ):
-
-        if a == 0x4 and b == 0x5:
-            self.four5switch(stp_file, upperEndRound, switchRound, lowerStartRound)
-        elif a == 0x0 and b == 0x2:
-            self.zero2switch(stp_file, upperEndRound, switchRound, lowerStartRound)
-        elif a == 0x0 and b == 0x1:
-            self.zero1switch(stp_file, upperEndRound, switchRound, lowerStartRound)
-        elif a == 0x2 and b == 0x2:
-            self.two2switch(stp_file, upperEndRound, switchRound, lowerStartRound)
-
-        stp_file.write(
-            f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|X2{upperEndRound}|X3{upperEndRound}) = 0b0000000000000000);\n"
-            f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = 0b0000000000000000);\n"
-            # f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = ~0b0000000000000000);\n"
-            # f"ASSERT(BVLE(BVPLUS(16, (X0{lowerStartRound} = 0b0000000000000000), (X1{lowerStartRound} = 0b0000000000000000), (X2{lowerStartRound} = 0b0000000000000000), (X3{lowerStartRound} = 0b0000000000000000)),0b0000000000000001));\n"
-            # f"ASSERT(BVPLUS(16, (X0{lowerStartRound} = 0b1111111111111111), (X1{lowerStartRound} = 0b1111111111111111), (X2{lowerStartRound} = 0b1111111111111111), (X3{lowerStartRound} = 0b1111111111111111)) <= 0b0000000000000001);\n"
-        )
-
-    def setupFixedSwitchConstraints(
-        self, stp_file, upperEndRound, switchRound, lowerStartRound
-    ):
-        """
-        - this function is designed for coded switch constraints for ABCT
-        - the clauses are served for single switch pattern only
-        - for the E_0 trail, 0,8,x,x and 2,0,x,x
-        """
-        if switchRound % 2 == 0:
-            stp_file.write(
-                # 0,8
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X1{upperEndRound} & 0b1000000000000111) = 0b0000000000000100);\n"
-                # 2,0
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-                f"ASSERT((X3{upperEndRound} & 0b1000000000000111) = 0b0000000000000000);\n"
-                # 0,8 --> check 4th bit of c== 4th bit of d
-                f"ASSERT((X0{lowerStartRound} & 0b0000100000000000)= (X1{lowerStartRound} & 0b0000000000001000));\n"
-                # 2,0 --> avoid c=even tgt with d=xx10
-                f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000000100000000),(X3{lowerStartRound}&0b0000000000000110)) = 0b0000000000000100)); \n"
-            )
-
-        else:
-            stp_file.write(
-                # 0,8
-                f"ASSERT((X0{upperEndRound} & 0b0000000000001111) = 0b0000000000000000);\n"
-                f"ASSERT((X1{upperEndRound} & 0b0000111100000000) = 0b0000100000000000);\n"
-                # 2,0
-                f"ASSERT((X2{upperEndRound} & 0b0000000000001111) = 0b0000000000000010);\n"
-                f"ASSERT((X3{upperEndRound} & 0b0000111100000000) = 0b0000000000000000);\n"
-                # 0,8
-                f"ASSERT((X0{lowerStartRound} & 0b0000000000010000) = (X1{lowerStartRound} & 0b0000000000001000));\n"
-                # 2,0
-                f"ASSERT(NOT(BVXOR((X2{lowerStartRound}&0b0000000000000010),(X3{lowerStartRound}&0b0000000000000011)) = 0b0000000000000010)); \n"
-            )
-        stp_file.write(
-            f"ASSERT(NOT(X0{upperEndRound}|X1{upperEndRound}|X2{upperEndRound}|X3{upperEndRound}) = 0b0000000000000000);\n"
-            f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = 0b0000000000000000);\n"
-            f"ASSERT(NOT(X0{lowerStartRound}& X1{lowerStartRound}& X2{lowerStartRound}& X3{lowerStartRound}) = ~0b0000000000000000);\n"
-            # f"ASSERT(BVLE(BVPLUS(16, (X0{lowerStartRound} = 0b0000000000000000), (X1{lowerStartRound} = 0b0000000000000000), (X2{lowerStartRound} = 0b0000000000000000), (X3{lowerStartRound} = 0b0000000000000000)),0b0000000000000001));\n"
-            # f"ASSERT(BVPLUS(16, (X0{lowerStartRound} = 0b1111111111111111), (X1{lowerStartRound} = 0b1111111111111111), (X2{lowerStartRound} = 0b1111111111111111), (X3{lowerStartRound} = 0b1111111111111111)) <= 0b0000000000000001);\n"
-        )

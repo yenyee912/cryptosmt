@@ -41,6 +41,28 @@ def blockCharacteristic(stpfile, characteristic, wordsize):
     return
 
 
+def blockBoomerangVariable(stpfile, parameters, wordsize):
+    """
+    Processes boomerangVariable by constructing blocking statements.
+    """
+    if "boomerangVariable" not in parameters or not parameters["boomerangVariable"]:
+        return  # Exit if boomerangVariable is not set or is empty
+
+    blockingStatement = "\nASSERT(NOT("
+
+    for entry in parameters["boomerangVariable"]:
+        for key, value in entry.items():
+            blockingStatement += "BVXOR({}, {}) | ".format(key, value)
+
+    blockingStatement = blockingStatement[:-2]  # Remove the last ' | '
+    blockingStatement += ") = 0hex{});\n".format("0" * (wordsize // 4))
+
+    # stpfile.write("here i am")
+
+    stpfile.write(blockingStatement)
+    return
+
+
 def setupQuery(stpfile):
     """
     Adds the query and printing of counterexample to the stp stpfile.

@@ -1,0 +1,81 @@
+
+Summary of Findings
+Briefly summarise the main results, including the longest achievable boomerang trails for SPARX and CHAM using specific 4-bit LSB patterns.
+Mention key performance indicators, like optimal weights achieved, and note any unusual results, such as significant clustering effects.
+
+Effectiveness of 4-Bit LSB Patterns
+Discuss the role of 4-bit LSB patterns in trail construction for both ciphers, and how different patterns impacted the ease or difficulty of constructing valid trails.
+Compare patterns: For instance, patterns leading to longer trails (such as Pattern 1 or 3) versus patterns that yielded shorter or less efficient trails.
+Explain any noticeable tendencies in pattern performance, like why odd or even switch rounds might have influenced trail lengths.
+
+Implications of Clustering and Probability Improvements
+Address the clustering effect observed in the boomerang trails, which allowed for probability improvements by achieving multiple trails leading to the same transitions.
+Describe how this clustering aligns with or differs from expectations, and its potential impact on future cryptanalysis methods.
+Include the limitations of this clustering effect, such as when increased counts of matching trails were halted due to practical time constraints.
+Comparison with Previous Research
+Compare your results with previous boomerang cryptanalysis research, such as Ankele’s 12-round boomerang result on SPARX, and explain how your methodology or patterns allowed for improvements.
+Highlight the time efficiency achieved in this research, like constructing trails in shorter timeframes compared to days in previous studies, due to optimised search techniques.
+Tool and Model Performance
+Discuss the impact of the automated boomerang search tool as an extension of CryptoSMT, especially in supporting complex trail searches for ARX ciphers.
+Reflect on the limitations and any areas where the tool could be further refined, such as handling more complex or layered SMT constraints without introducing additional restrictions.
+Security Margin Implications
+Explain the significance of achieving 13/24 rounds broken for SPARX, indicating a 54% security margin.
+Discuss the practical implications of these findings for the perceived security of SPARX and CHAM, particularly with respect to boomerang attack resistance.
+Limitations and Recommendations for Future Research
+Mention any limitations, such as the computational time constraint of 30 minutes for certain search trials, and suggest how increased search time could further improve findings.
+Propose areas for future research, such as exploring other ARX cipher structures or expanding the 4-bit LSB pattern range for a more comprehensive analysis of clustering effects and trail probabilities.
+
+\begin{enumerate}
+    \item How can Highly-probable Boomerang Switches patterns be identified?
+    \item How can an automated boomerang search utilising Highly-probable Boomerang Switches be designed for ARX ciphers?
+    \item What is the security margin of SPARX and CHAM against boomerang cryptanalysis?
+    % \item How to construct efficient boomerang distinguishers for ARX ciphers SPARX and CHAM?
+\end{enumerate}
+
+\section{Research Objective}
+This research aims to:
+%jesen_teh: 1. Identify probabilistic boomerang switch patterns with high switching probability. 
+%2. To propose an automated boomerang search that utilizes probabilistic boomerang switches for ARX ciphers. 
+% 3. To construct efficient boomerang distinguishers for ARX ciphers CHAM and SPARX.
+\begin{enumerate}
+    \item To propose Highly-probable Boomerang Switches patterns based on ABCT.
+    \item To propose an automated boomerang search tool that utilises Highly-probable Boomerang Switches for ARX ciphers.
+    \item To construct efficient boomerang distinguishers for ARX ciphers SPARX and CHAM.
+\end{enumerate}
+
+\section{Research Contribution}
+The contributions of this research are:
+\begin{enumerate}
+    \item Highly-probable Boomerang Switches patterns based on ABCT.
+    \item Automated boomerang search tool that utilises Highly-probable Boomerang Switches for ARX ciphers.
+    \item Efficient boomerang distinguishers for ARX ciphers, SPARX and CHAM.
+\end{enumerate}
+
+subsection{Boomerang Trail Search Experimentation}
+\begin{steps}
+    \item Both ciphers experimented with both strategies, to see which produce the best result.
+
+    \item placement of em, as mentioned by ss1 and ss2, the placement of middle round needed to be in the middle, not too biased, the round will be adjusted based on the outcome. starting from even half first, then experiment for +few rounds or -few rounds. for example, sparx, 3-6-9, as anekele's work got example, cham 13-15-18,. 
+
+    \item ss1: cham, pick the best as only one choice
+    sparx, pick the author recommended trail,
+
+    \item ss2 patterns are applied to both ciphers to maintain the fixed variables, to observe how same patterns work differently on ARX ciphers with different design
+
+    \item optimisation: fix input-output differences, check section \ref{sec:full-rec-tool}
+    
+    \end{steps}
+
+i am listing the procedures in experiments on constructing boomerang trail using 2 search stratergies (ss) and also 3 different patterns. nourish this section and make them readable, keep simple but professional and technical tone
+
+In this section, we outline the experimental procedures followed to construct boomerang trails for both SPARX-64 and CHAM-64 ciphers using two distinct search strategies (SS) and three different 4-bit LSB patterns. The goal was to evaluate the effectiveness of these strategies and patterns in producing valid and optimal boomerang trails.
+
+\begin{steps} \item Experiment with Search Strategies: Both SPARX-64 and CHAM-64 ciphers were tested using the two search strategies (SS1 and SS2) to identify which strategy produced the most efficient boomerang trails. Each strategy's performance was compared based on the number of rounds and the overall trail probability.
+
+  \item **Middle Round Placement (E$_m$)**: As discussed in Sections \ref{sec:search-strategy-1} and \ref{sec:search-strategy-2}, the placement of the middle round $E_m$ is crucial for optimizing the trail. The middle round should not be too biased towards any side, and its placement was adjusted based on the results obtained. We initially tested middle round placements in the even range (e.g., 3-6-9 for SPARX-64), and fine-tuned by experimenting with slight adjustments (e.g., +1 or -1 rounds). For example, for SPARX-64, placements like 3, 6, and 9 were considered, following recommendations from \citeauthor{ankele2018reducedsparx}. For CHAM-64, placements such as 13, 15, and 18 were experimented with.
+
+\item **Search Strategy 1 (SS1)**: Under SS1, for CHAM-64, the best trail configuration was chosen based on a single pattern choice, aiming for optimality. For SPARX-64, we used the trail configuration recommended by the authors in previous works to serve as the starting point for further experimentation.
+
+\item **Search Strategy 2 (SS2)**: In SS2, patterns were applied consistently to both ciphers, with fixed variables maintained throughout the process. This allowed us to observe how identical patterns impacted the construction of boomerang trails across ARX ciphers with different designs. The focus was to assess the variation in performance when the same pattern was applied to different cipher architectures.
+
+\item **Optimization**: Input-output differences were fixed to ensure consistency across the trials, and optimization techniques, as outlined in Section \ref{sec:full-rec-tool}, were employed. This ensured the most efficient use of the tool and improved the probability of finding valid boomerang trails.
